@@ -7,7 +7,7 @@ Plug-and-play **dApp connect** for [KCC20 Wallet](https://kcc-20-wallet.vercel.a
 | **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=166` |
 | **This repo** | client `sdk.js` + docs + demo (not the wallet app) |
 | **Wallet app** | [kcc-20-wallet.vercel.app](https://kcc-20-wallet.vercel.app) · [KCC20-wallet](https://github.com/mrzeku2000XTTT/KCC20-wallet) |
-| **Docs site** | [kcc-20-wallet.vercel.app/docs.html](https://kcc-20-wallet.vercel.app/docs.html) |
+| **Docs (Vercel)** | [kcc20-sdk.vercel.app](https://kcc20-sdk.vercel.app) |
 | **Live demo** | [examples/dapp-demo.html](./examples/dapp-demo.html) |
 | **sdkVersion** | `166` |
 
