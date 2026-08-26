@@ -7,7 +7,7 @@ Plug-and-play **dApp connect** for [KCC20 Wallet](https://kcc-20-wallet.vercel.a
 | **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=166` |
 | **This repo** | client `sdk.js` + docs + demo (not the wallet app) |
 | **Wallet app** | [kcc-20-wallet.vercel.app](https://kcc-20-wallet.vercel.app) · [KCC20-wallet](https://github.com/mrzeku2000XTTT/KCC20-wallet) |
-| **Docs (Vercel)** | [kcc20-sdk.vercel.app](https://kcc20-sdk.vercel.app) |
+| **Docs frontend** | Import this repo on Vercel → `kcc20-sdk.vercel.app` (static root, no build) |
 | **Live demo** | [examples/dapp-demo.html](./examples/dapp-demo.html) |
 | **sdkVersion** | `166` |
 
@@ -129,6 +129,14 @@ package.json        — @kcc20/sdk
 The **wallet UI, keys, and signing engine** live in [KCC20-wallet](https://github.com/mrzeku2000XTTT/KCC20-wallet). This repo is only what a dApp needs to copy-paste.
 
 ---
+
+## Deploy the docs on Vercel
+
+This repo is a static site. In Vercel: **Add New → Project → import `mrzeku2000XTTT/kcc20-sdk`**. Framework preset: Other. Root: `.`  Output: leave empty. You get `https://kcc20-sdk.vercel.app`.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mrzeku2000XTTT/kcc20-sdk)
+
+Routes: `/` docs · `/demo` live Connect demo · `/sdk.js` the client.
 
 ## License
 
