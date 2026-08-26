@@ -53,6 +53,7 @@
       <a href="#events">Events</a>
       <a href="#session">Session</a>
       <a href="#errors">Errors</a>
+      <a href="#security">Security</a>
       <a href="#kip12">KIP-12</a>
       <a href="#kasware">KasWare</a>
       <a href="#embed">Iframe / mobile</a>
@@ -284,6 +285,35 @@ kcc.removeListener(event, fn);</pre>
             <tr><td><code>This wallet has 0 TICK</code></td><td>Wrong chip / buy the token first</td></tr>
           </tbody>
         </table>
+      </section>
+
+      <section class="doc-sec" id="security" data-keywords="security PIN phishing origin allowlist keys postMessage CSP frame clickjacking">
+        <h2>Security</h2>
+        <p>Same threat model as KasWare: the dApp is <b>untrusted</b>. The wallet is trusted. Keys never go to Nilla, TTT, or <code>sdk.js</code>.</p>
+        <table>
+          <thead><tr><th>Control</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td>Origin isolation</td><td>Private keys live only on <code>kcc-20-wallet.vercel.app</code>. dApps talk via <code>postMessage</code>.</td></tr>
+            <tr><td>User Approve</td><td>Connect, Sign, Send, Broadcast each show a sheet. Reject stops the request.</td></tr>
+            <tr><td>PIN</td><td>Native sign requires the wallet PIN (salted hash). Not sent to the dApp.</td></tr>
+            <tr><td>Allowlist</td><td>After Connect, that <b>https origin</b> may call silent reads. Disconnect forgets it.</td></tr>
+            <tr><td>HTTPS only</td><td>Host ignores non-https origins (except localhost).</td></tr>
+            <tr><td>signInputs</td><td>Only P2PK of the connected address. Covenant/curve/pool inputs must not be listed.</td></tr>
+            <tr><td>No blind KAS send</td><td>Shim <code>sendKaspa</code> is rejected. Use <code>sendToken</code> / <code>signPskt</code>.</td></tr>
+            <tr><td>Frame lock</td><td>The PWA sets <code>frame-ancestors 'self'</code> so random sites cannot iframe the PIN pad.</td></tr>
+            <tr><td>Targeted postMessage</td><td>Replies go to the requesting origin, not <code>*</code>.</td></tr>
+          </tbody>
+        </table>
+        <h3>What a dApp must not do</h3>
+        <ul>
+          <li>Load <code>sdk.js</code> from a random mirror. Pin <code>kcc-20-wallet.vercel.app/sdk.js?v=166</code> (or this GitHub repo).</li>
+          <li>Ask for a seed, PIN, or hex key. If a site does, it is phishing — close it.</li>
+          <li>Treat Connect as a payment. Connect only shares an address. Spend needs Sign.</li>
+          <li>Auto-connect on page load.</li>
+          <li>Sign covenant / KRON curve / pool / token-cell inputs for the user.</li>
+        </ul>
+        <h3>What Connect is not</h3>
+        <p>Connect is not a cryptographic login proof (same as KasWare <code>requestAccounts</code>). Anyone can display an address. To prove control, have the user <code>signPskt</code> or (later) <code>signMessage</code>. Do not credit funds on Connect alone.</p>
       </section>
 
       <section class="doc-sec" id="kip12" data-keywords="KIP-12 kaspa:provider rdns app.kcc20.wallet requestProvider">
