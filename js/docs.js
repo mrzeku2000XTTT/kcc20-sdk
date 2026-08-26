@@ -1,5 +1,6 @@
 (function () {
   var KEYS = [
+    ['Try it', 'try'],
     ['connect', 'connect'],
     ['requestAccounts', 'connect'],
     ['getAccounts', 'getAccounts'],

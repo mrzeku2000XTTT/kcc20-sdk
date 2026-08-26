@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>KCC20 SDK docs — connect, sign, send KCC20</title>
   <meta name="description" content="Detailed KCC20 Wallet (SCORPION) SDK: every method, return shape, error, popup vs silent, signPskt, sendToken, KasWare, KIP-12.">
   <link rel="icon" href="assets/icon.png">
@@ -21,7 +21,7 @@
     <nav>
       <a href="index.html" class="on">Docs</a>
       <a href="nilla.html">Nilla Gorilla</a>
-      <a href="demo.html">Demo</a>
+      <a href="demo.html">Try it</a>
       <a href="https://github.com/mrzeku2000XTTT/kcc20-sdk">GitHub</a>
       <a href="https://kcc-20-wallet.vercel.app">Wallet</a>
     </nav>
@@ -31,6 +31,7 @@
     <aside>
       <div class="g">Start</div>
       <a href="#can-do">What you can do</a>
+      <a href="#try">Try it</a>
       <a href="#install">Install</a>
       <a href="#quick">Quick start</a>
       <a href="#popup">Popup vs silent</a>
@@ -86,7 +87,44 @@
             <tr><td>Disconnect</td><td><code>disconnect()</code> — popup closes, stay on your tab</td></tr>
           </tbody>
         </table>
-        <p>Use the <b>search bar</b> or tap a <b>keyword</b> to jump to that method.</p>
+        <p>Use the <b>search bar</b> or tap a <b>keyword</b> to jump to that method. Or <a href="demo.html">open Try it</a> / the panel below — Connect is a real PWA popup.</p>
+      </section>
+
+      <section class="doc-sec" id="try" data-keywords="try test playground connect live demo">
+        <h2>Try it in this page</h2>
+        <p>Anyone can test SCORPION here. Tap <b>Connect</b> (allow popups). The wallet window closes after Approve; then tap the silent reads. Sign / Send open the PWA again. This site never sees your PIN or key.</p>
+        <div class="pg">
+          <p class="pg-status" id="pg-status">Loading tester…</p>
+          <div class="pg-grid">
+            <button class="btn gold" id="pg-connect" type="button">Connect</button>
+            <button class="btn ghost" id="pg-accounts" type="button">Accounts</button>
+            <button class="btn ghost" id="pg-network" type="button">Network</button>
+            <button class="btn ghost" id="pg-pubkey" type="button">Public key</button>
+            <button class="btn ghost" id="pg-utxos" type="button">UTXOs</button>
+            <button class="btn ghost" id="pg-bal" type="button">Balance</button>
+            <button class="btn ghost" id="pg-hold" type="button">Holdings</button>
+            <button class="btn ghost" id="pg-kkdag" type="button">KKDAG</button>
+            <button class="btn ghost" id="pg-disc" type="button">Disconnect</button>
+          </div>
+          <label for="pg-tick">sendToken tick</label>
+          <input id="pg-tick" value="KKDAG" autocomplete="off">
+          <label for="pg-amt">amount</label>
+          <input id="pg-amt" value="10" inputmode="decimal" autocomplete="off">
+          <label for="pg-dest">dest (kaspa:q…)</label>
+          <input id="pg-dest" placeholder="kaspa:q…" autocomplete="off">
+          <div class="hero-actions">
+            <button class="btn ghost" id="pg-send" type="button">Send token</button>
+          </div>
+          <label for="pg-indexes">signInputs indexes (global, comma-separated)</label>
+          <input id="pg-indexes" placeholder="e.g. 2  — not 0 if 0 is the KRON curve" autocomplete="off">
+          <label for="pg-pskt">unsigned Safe JSON</label>
+          <textarea id="pg-pskt" placeholder='paste unsigned txJsonString'></textarea>
+          <div class="hero-actions">
+            <button class="btn ghost" id="pg-sign" type="button">Sign PSKT</button>
+            <button class="btn ghost" id="pg-push" type="button">Broadcast</button>
+          </div>
+          <pre class="pg-out" id="pg-out"></pre>
+        </div>
       </section>
 
       <section class="doc-sec" id="install" data-keywords="install script sdk.js sdkVersion origin load click initialized">
@@ -376,5 +414,6 @@ window.dispatchEvent(new Event('kaspa:requestProvider'));</pre>
     </main>
   </div>
   <script src="js/docs.js"></script>
+  <script src="js/playground.js"></script>
 </body>
 </html>

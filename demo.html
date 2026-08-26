@@ -2,77 +2,64 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>KCC20 SDK demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Try KCC20 SDK</title>
+  <meta name="description" content="Live SCORPION playground: Connect, silent reads, sendToken, signPskt.">
   <link rel="icon" href="assets/icon.png">
   <link rel="stylesheet" href="css/docs.css">
-  <script src="https://kcc-20-wallet.vercel.app/sdk.js?v=166"></script>
 </head>
 <body>
-  <header class="top">
+  <header class="top top-simple">
     <div class="brand-wrap">
       <img src="assets/icon.png" alt="">
-      <div class="brand">KCC20 SDK<small>Live connect demo</small></div>
+      <div class="brand">KCC20 SDK<small>Try it live</small></div>
     </div>
-    <div class="search-wrap" style="visibility:hidden" aria-hidden="true"></div>
     <nav>
       <a href="index.html">Docs</a>
       <a href="nilla.html">Nilla Gorilla</a>
-      <a href="demo.html" class="on">Demo</a>
+      <a href="demo.html" class="on">Try it</a>
       <a href="https://github.com/mrzeku2000XTTT/kcc20-sdk">GitHub</a>
       <a href="https://kcc-20-wallet.vercel.app">Wallet</a>
     </nav>
   </header>
-  <main style="max-width:720px;margin:0 auto;padding:28px 20px 80px">
-    <p class="pill">sdkVersion 166</p>
-    <h1>Try Connect</h1>
-    <p>This page is a dApp. Connect opens the real KCC20 PWA. After Approve the popup closes; Accounts / Network / Public key / UTXOs stay silent.</p>
-    <div class="hero-actions" id="row">
-      <button class="btn gold" id="connect" type="button">Connect</button>
-      <button class="btn ghost" id="accounts" type="button">Accounts</button>
-      <button class="btn ghost" id="network" type="button">Network</button>
-      <button class="btn ghost" id="pubkey" type="button">Public key</button>
-      <button class="btn ghost" id="utxos" type="button">UTXOs</button>
-      <button class="btn ghost" id="bal" type="button">Balance</button>
-      <button class="btn ghost" id="hold" type="button">Holdings</button>
-      <button class="btn ghost" id="disc" type="button">Disconnect</button>
+  <main style="max-width:720px;margin:0 auto">
+    <p class="pill">sdk.js?v=166 · loads on Connect click</p>
+    <h1>Try SCORPION</h1>
+    <p>This page is a dApp. <b>Connect</b> opens the real KCC20 PWA. After you Approve, the window closes. Then tap Accounts / Network / Public key / UTXOs (silent). Sign and Send open the wallet again. We never see your PIN. Allow popups.</p>
+    <div class="pg">
+      <p class="pg-status" id="pg-status">Tap Connect</p>
+      <div class="pg-grid">
+        <button class="btn gold" id="pg-connect" type="button">Connect</button>
+        <button class="btn ghost" id="pg-accounts" type="button">Accounts</button>
+        <button class="btn ghost" id="pg-network" type="button">Network</button>
+        <button class="btn ghost" id="pg-pubkey" type="button">Public key</button>
+        <button class="btn ghost" id="pg-utxos" type="button">UTXOs</button>
+        <button class="btn ghost" id="pg-bal" type="button">Balance</button>
+        <button class="btn ghost" id="pg-hold" type="button">Holdings</button>
+        <button class="btn ghost" id="pg-kkdag" type="button">KKDAG</button>
+        <button class="btn ghost" id="pg-disc" type="button">Disconnect</button>
+      </div>
+      <label for="pg-tick">sendToken tick</label>
+      <input id="pg-tick" value="KKDAG" autocomplete="off">
+      <label for="pg-amt">amount</label>
+      <input id="pg-amt" value="10" inputmode="decimal" autocomplete="off">
+      <label for="pg-dest">dest (full kaspa:q…)</label>
+      <input id="pg-dest" placeholder="kaspa:q…" autocomplete="off">
+      <div class="hero-actions">
+        <button class="btn ghost" id="pg-send" type="button">Send token</button>
+      </div>
+      <label for="pg-indexes">signInputs global indexes (comma). Empty = wallet signs its P2PK only.</label>
+      <input id="pg-indexes" placeholder="e.g. 2" autocomplete="off">
+      <label for="pg-pskt">unsigned Safe JSON</label>
+      <textarea id="pg-pskt" placeholder='paste unsigned txJsonString'></textarea>
+      <div class="hero-actions">
+        <button class="btn ghost" id="pg-sign" type="button">Sign PSKT</button>
+        <button class="btn ghost" id="pg-push" type="button">Broadcast</button>
+      </div>
+      <pre class="pg-out" id="pg-out"></pre>
     </div>
-    <p style="margin:18px 0 8px">Optional: paste unsigned Safe JSON, then Sign / Push (those open the PWA).</p>
-    <textarea id="pskt" placeholder='{"transaction": ... }' style="width:100%;min-height:90px;background:#141416;color:inherit;border:1px solid var(--line);border-radius:12px;padding:10px;font:12px/1.4 ui-monospace,Menlo,monospace"></textarea>
-    <div class="hero-actions">
-      <button class="btn ghost" id="sign" type="button">Sign PSKT</button>
-      <button class="btn ghost" id="push" type="button">Push signed</button>
-    </div>
-    <pre id="out">sdk: waiting…</pre>
+    <p><a href="nilla.html">Nilla Gorilla</a> if you are building a KRON buy. <a href="index.html">Full API</a>.</p>
   </main>
-  <script>
-    const out = document.getElementById('out');
-    function log(x) {
-      out.textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
-    }
-    function api() {
-      if (!window.kcc20) throw new Error('sdk.js did not load');
-      return window.kcc20;
-    }
-    log({ detected: !!window.kcc20, sdkVersion: window.kcc20 && window.kcc20.sdkVersion, origin: window.kcc20 && window.kcc20.origin });
-    document.getElementById('connect').onclick = () => api().connect().then(log).catch(e => log(e.message));
-    document.getElementById('accounts').onclick = () => api().getAccounts().then(log).catch(e => log(e.message));
-    document.getElementById('network').onclick = () => api().getNetwork().then(log).catch(e => log(e.message));
-    document.getElementById('pubkey').onclick = () => api().getPublicKey().then(log).catch(e => log(e.message));
-    document.getElementById('utxos').onclick = () => api().getUtxoEntries().then(function (u) {
-      log({ count: Array.isArray(u) ? u.length : 0, utxos: u });
-    }).catch(e => log(e.message));
-    document.getElementById('bal').onclick = () => api().getBalance().then(log).catch(e => log(e.message));
-    document.getElementById('hold').onclick = () => api().getHoldings().then(log).catch(e => log(e.message));
-    document.getElementById('sign').onclick = () => {
-      const json = document.getElementById('pskt').value.trim();
-      api().signPskt({ txJsonString: json, options: { signInputs: [] } }).then(log).catch(e => log(e.message));
-    };
-    document.getElementById('push').onclick = () => {
-      const json = document.getElementById('pskt').value.trim();
-      api().pushTx(json).then(log).catch(e => log(e.message));
-    };
-    document.getElementById('disc').onclick = () => api().disconnect().then(() => log('disconnected')).catch(e => log(e.message));
-  </script>
+  <script src="js/playground.js"></script>
 </body>
 </html>
