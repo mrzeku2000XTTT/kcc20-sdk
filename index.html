@@ -211,7 +211,7 @@ const { txId } = await kcc.pushTx(signed);</pre>
         <p class="sig">await kcc.signPskt({ txJsonString, options: { signInputs: [{ index, sighashType: 1 }] } }) → string</p>
         <p><b>You build</b> rusty-kaspa Safe JSON. The wallet PIN-signs (or KasWare if that chip is KasWare-only). Returns a <b>string</b>.</p>
         <ul>
-          <li><code>signInputs</code>: only the connected address’s <b>P2PK</b> input indexes.</li>
+          <li><code>signInputs</code>: <b>global</b> <code>tx.inputs[]</code> indexes (0-based), only the connected address’s <b>P2PK</b> funding slots. Not “0 = first wallet input.” Never list curve/inventory/covenant slots (that yields node error <code>false stack entry at end of script execution</code>).</li>
           <li><code>sighashType</code> must be <code>1</code> (SIGHASH_ALL).</li>
           <li>Never list covenant / KRON curve / pool / token-cell inputs. That is the usual KasWare PSKT break.</li>
           <li>If you omit the list, KCC20 signs only unsigned inputs whose UTXO address matches the connected wallet.</li>
