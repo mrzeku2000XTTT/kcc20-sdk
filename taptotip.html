@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tap2Tip / Base44 — buy KRON</title>
+  <link rel="icon" href="assets/icon.png">
+  <link rel="stylesheet" href="css/docs.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand-wrap">
+      <img src="assets/icon.png" alt="">
+      <div class="brand">KCC20 SDK<small>Tap2Tip · Base44</small></div>
+    </div>
+    <div class="search-wrap">
+      <input id="q" type="search" placeholder="Search: buyKron, sendToken, Fund…" autocomplete="off">
+      <div class="search-meta" id="search-meta"></div>
+    </div>
+    <nav>
+      <a href="index.html">Docs</a>
+      <a href="nilla.html">Nilla Gorilla</a>
+      <a href="taptotip.html" class="on">Tap2Tip</a>
+      <a href="demo.html">Try it</a>
+      <a href="https://kcc-20-wallet.vercel.app">Wallet</a>
+    </nav>
+  </header>
+  <div class="keywords" id="keywords"></div>
+  <div class="wrap">
+    <aside>
+      <div class="g">Tap2Tip</div>
+      <a href="#ttt">What to build</a>
+      <a href="#buy">buyKron</a>
+      <a href="#fund">sendToken (Fund)</a>
+      <a href="#rules">Click only</a>
+      <a href="#prompt-ttt">Copy Base44 prompt</a>
+    </aside>
+    <main>
+      <section class="doc-sec" id="ttt" data-keywords="Tap2Tip Base44 TTT tttz kcc20test">
+        <p class="pill">sdk v167 · BUILD 169</p>
+        <h1>Tap2Tip — buy any KRON token</h1>
+        <p>Base44 must <b>not</b> build a KRON PSKT. Call <code>buyKron</code> on a Buy tap. The KCC20 PWA quotes + builds + user PIN-signs — same as Home → TRADE.</p>
+        <p><code>sendToken</code> is still Fund DD (send KKDAG the user already holds). Different button.</p>
+        <div class="hero-actions">
+          <a class="btn gold" href="demo.html">Try Buy KRON in this site</a>
+        </div>
+      </section>
+      <section class="doc-sec" id="buy" data-keywords="buyKron quoteKron sellKron KKDAG KRON">
+        <h2>buyKron</h2>
+        <p class="sig">await kcc.buyKron({ tick: 'KKDAG', amount: '10' }) → { txId, quote, explorer }</p>
+        <p><code>amount</code> is <b>KAS to spend</b>. Any KRON tick on idx.kron.technology. Mainnet only.</p>
+        <p>Optional: <code>quoteKron({ tick, side:'buy', amount })</code> for a preview (works in the KCC20 iframe). Buy still quotes on the Sign sheet.</p>
+        <p>Sell: <code>sellKron({ tick, amount })</code> — amount is tokens, not KAS.</p>
+      </section>
+      <section class="doc-sec" id="fund" data-keywords="sendToken fundCredits treasury">
+        <h2>sendToken — Fund, not a buy</h2>
+        <p class="sig">await kcc.sendToken({ tick:'KKDAG', amount:'10', dest: treasuryKaspaQ })</p>
+        <p>Transfers a bag the wallet already holds. User must buy KKDAG first (Home TRADE or <code>buyKron</code>).</p>
+      </section>
+      <section class="doc-sec" id="rules" data-keywords="click connect popup">
+        <h2>Only on a tap</h2>
+        <p>Connect, Buy, Pay, Disconnect — never on load, never on app switch. No TTT PIN pad.</p>
+      </section>
+      <section class="doc-sec" id="prompt-ttt" data-keywords="Base44 prompt copy">
+        <h2>Copy into Base44</h2>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" id="copy-prompt">Copy prompt</button>
+        </div>
+        <pre class="copy-box" id="replit-prompt">You are the tttz.xyz Base44 agent. Do not invent a DEX. Do not build KRON PSKTs. Do not fake KKDAG grants.
+
+Load once: https://kcc-20-wallet.vercel.app/sdk.js?v=167
+window.kcc20.sdkVersion must be "167" or higher (buyKron exists).
+
+CLICK ONLY (never useEffect / route / app switch):
+- Connect → await kcc.connect()
+- Disconnect → await kcc.disconnect()
+- Fund DD → await kcc.sendToken({ tick:'KKDAG', amount, dest: FULL kaspa:q treasury })
+- Buy KRON → await kcc.buyKron({ tick, amount })  // amount = KAS to spend, tick = KKDAG/KRON/IFWEN/any KRON token
+
+buyKron opens KCC20. Wallet quotes and builds the same Home TRADE swap. User PIN-signs. You get { txId, quote, explorer }.
+
+kcc20test UI: tick input (default KKDAG), KAS amount (default 10), Buy KRON button. Show live getTokenBalance(tick). Show txId. Do not open a TTT PIN pad. Do not call kasware.requestAccounts. Do not call signPskt for this buy (that is Nilla’s job).
+
+Test: Connect once → Buy 10 KAS of KKDAG → Sign in KCC20 → holdings increase. Switching apps = zero popups.
+</pre>
+      </section>
+    </main>
+  </div>
+  <script src="js/docs.js"></script>
+  <script>
+    document.getElementById('copy-prompt')?.addEventListener('click', function () {
+      var t = document.getElementById('replit-prompt')?.innerText || '';
+      navigator.clipboard.writeText(t).then(function () {
+        document.getElementById('copy-prompt').textContent = 'Copied';
+      }).catch(function () {});
+    });
+  </script>
+</body>
+</html>

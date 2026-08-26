@@ -1,5 +1,5 @@
 (function () {
-  var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=166';
+  var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=167';
   var loading = null;
 
   function $(id) { return document.getElementById(id); }
@@ -121,6 +121,13 @@
           tick: ($('pg-tick') && $('pg-tick').value.trim()) || 'KKDAG',
           amount: ($('pg-amt') && $('pg-amt').value.trim()) || '10',
           dest: ($('pg-dest') && $('pg-dest').value.trim()) || ''
+        }).then(log);
+      })],
+      ['pg-buy', run(function (kcc) {
+        if (typeof kcc.buyKron !== 'function') throw new Error('Need sdk.js?v=167 for buyKron');
+        return kcc.buyKron({
+          tick: ($('pg-tick') && $('pg-tick').value.trim()) || 'KKDAG',
+          amount: ($('pg-amt') && $('pg-amt').value.trim()) || '10'
         }).then(log);
       })]
     ];

@@ -36,6 +36,8 @@
     ['phishing', 'security'],
     ['iframe', 'embed'],
     ['mobile', 'embed'],
+    ['Tap2Tip', 'ttt'],
+    ['buyKron', 'buy'],
     ['Nilla Gorilla', 'nilla'],
     ['Nilla', 'nilla'],
     ['TTT', 'recipes'],
@@ -49,6 +51,10 @@
   function go(id, query) {
     if (id === 'nilla' && !document.getElementById('nilla')) {
       location.href = 'nilla.html';
+      return;
+    }
+    if ((id === 'ttt' || id === 'buy') && !document.getElementById('ttt')) {
+      location.href = 'taptotip.html';
       return;
     }
     var el = document.getElementById(id);
