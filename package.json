@@ -1,0 +1,36 @@
+{
+  "name": "@kcc20/sdk",
+  "version": "1.6.6",
+  "description": "Plug-and-play KCC20 Wallet (SCORPION) dApp SDK. Connect, getPublicKey, getUtxoEntries, signPskt — no Chrome extension.",
+  "main": "sdk.js",
+  "browser": "sdk.js",
+  "unpkg": "sdk.js",
+  "jsdelivr": "sdk.js",
+  "files": [
+    "sdk.js",
+    "CONNECT.md",
+    "docs.html",
+    "examples/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrzeku2000XTTT/kcc20-sdk.git"
+  },
+  "homepage": "https://github.com/mrzeku2000XTTT/kcc20-sdk",
+  "bugs": {
+    "url": "https://github.com/mrzeku2000XTTT/kcc20-sdk/issues"
+  },
+  "keywords": [
+    "kaspa",
+    "kcc20",
+    "scorpion",
+    "wallet",
+    "sdk",
+    "pskt",
+    "dapp"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --check sdk.js"
+  }
+}
