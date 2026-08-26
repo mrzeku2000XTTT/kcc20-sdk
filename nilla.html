@@ -111,10 +111,14 @@ const utxos    = await kcc.getUtxoEntries(accounts[0]);</pre>
         <p>Reject → <code>User rejected</code>. Stop. No retry loop.</p>
       </section>
 
-      <section class="doc-sec" id="broadcast-nilla" data-keywords="pushTx broadcast txId">
+      <section class="doc-sec" id="broadcast-nilla" data-keywords="pushTx broadcast txId malformed object">
         <h2>Broadcast</h2>
         <p class="sig">await kcc.pushTx(signedString) → { txId, node }</p>
-        <p>Or your own node. Do not double-broadcast. Do not push the failed blob again.</p>
+        <p><b>Not a string.</b> KasWare demos often treat the return as a 64-hex id. SCORPION returns an object. Read <code>result.txId</code> (64-hex). <code>result.node</code> is the public node URL. If you test <code>typeof result === 'string'</code> you will log MALFORMED even when broadcast succeeded.</p>
+<pre>const r = await kcc.pushTx(signed);
+const txId = typeof r === 'string' ? r : (r && r.txId);
+// txId is the 64-char hex. Never log the signed JSON.</pre>
+        <p>Or submit with your own node. Do not double-broadcast. Do not push the failed false-stack blob again.</p>
       </section>
 
       <section class="doc-sec" id="false-stack" data-keywords="false stack entry script execution covenant">
