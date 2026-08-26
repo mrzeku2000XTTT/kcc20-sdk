@@ -3,7 +3,7 @@
 **SDK repo (plug-and-play):** https://github.com/mrzeku2000XTTT/kcc20-sdk  
 **Docs site:** https://kcc-20-wallet.vercel.app/docs.html  
 Live wallet: https://kcc-20-wallet.vercel.app  
-SDK: https://kcc-20-wallet.vercel.app/sdk.js?v=166  
+SDK: https://kcc-20-wallet.vercel.app/sdk.js?v=167  
 Demo: https://kcc-20-wallet.vercel.app/dapp-demo.html  
 Wallet app: https://github.com/mrzeku2000XTTT/KCC20-wallet
 
@@ -25,11 +25,11 @@ KIP-12 itself is still a **draft** ([kaspanet/kips#21](https://github.com/kaspan
 ## Install in a dApp
 
 ```html
-<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=166"></script>
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=167"></script>
 ```
 
 ```js
-const kcc = window.kcc20; // require kcc.sdkVersion === "166"
+const kcc = window.kcc20; // require kcc.sdkVersion === "167"
 const accounts = await kcc.connect();          // popup: user Approves, then the window closes
 const address = accounts[0];
 const network = await kcc.getNetwork();        // silent — popup stays closed
@@ -82,8 +82,20 @@ Load `sdk.js` **before** you dispatch `kaspa:requestProvider`.
 | `getHoldings()` | KAS + KCC20 bags |
 | `signPskt({ txJsonString, options })` | signed Safe JSON **string** |
 | `pushTx(signedJson)` | `{ txId, node }` — **object**, not a hex string. Read `result.txId`. |
-| `sendToken({ tick, amount, dest })` | KCC20 send (used by TTT Fund) |
+| `buyKron({ tick, amount })` | Buy any KRON KCC20. `amount` = KAS. Wallet builds TRADE. Live ticks: [tokens.html](https://kcc20-sdk.vercel.app/tokens.html) |
+| `quoteKron` / `sellKron` | Preview / sell (sell amount = tokens) |
+| `sendToken({ tick, amount, dest })` | KCC20 send (used by TTT Fund). Not a buy. |
 | `disconnect()` | drop origin |
+
+## Buy on any vibe platform
+
+```js
+await kcc.buyKron({ tick: 'KKDAG', amount: '10' });
+```
+
+Canonical list of launched ticks: `https://api.kron.technology/api/registry/tokenlist?all=1` (also `/tokens.json` and `/api/tokenlist` on the SDK host). Skip `?` tickers. Agents: read `https://kcc20-sdk.vercel.app/llms.txt`.
+
+Other wallets: list us via KIP-12; copy Connect-on-click, silent session, wallet-built `buyKron`, P2PK-only `signPskt` (global indexes), `pushTx` → `{ txId, node }`.
 
 ## What this is not
 

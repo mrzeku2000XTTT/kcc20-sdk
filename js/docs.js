@@ -37,7 +37,10 @@
     ['iframe', 'embed'],
     ['mobile', 'embed'],
     ['Tap2Tip', 'ttt'],
-    ['buyKron', 'buy'],
+    ['buyKron', 'buyKron'],
+    ['buyToken', 'buyKron'],
+    ['Tokens', 'tokens'],
+    ['tokenlist', 'tokens'],
     ['Nilla Gorilla', 'nilla'],
     ['Nilla', 'nilla'],
     ['TTT', 'recipes'],
@@ -53,9 +56,17 @@
       location.href = 'nilla.html';
       return;
     }
-    if ((id === 'ttt' || id === 'buy') && !document.getElementById('ttt')) {
+    if ((id === 'ttt' || id === 'buy') && !document.getElementById('ttt') && !document.getElementById('buy')) {
       location.href = 'taptotip.html';
       return;
+    }
+    if (id === 'tokens' && !document.getElementById('tokens-hero')) {
+      location.href = 'tokens.html';
+      return;
+    }
+    if (id === 'buyKron' && !document.getElementById('buyKron')) {
+      if (document.getElementById('buy')) { id = 'buy'; }
+      else { location.href = 'docs.html#buyKron'; return; }
     }
     var el = document.getElementById(id);
     if (!el) return;

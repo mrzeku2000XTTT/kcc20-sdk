@@ -4,12 +4,14 @@ Plug-and-play **dApp connect** for [KCC20 Wallet](https://kcc-20-wallet.vercel.a
 
 | | |
 |---|---|
-| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=166` |
-| **This repo** | client `sdk.js` + docs + demo (not the wallet app) |
+| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=167` |
+| **This repo** | client `sdk.js` + docs + Tokens + AI sources (not the wallet app) |
 | **Wallet app** | [kcc-20-wallet.vercel.app](https://kcc-20-wallet.vercel.app) · [KCC20-wallet](https://github.com/mrzeku2000XTTT/KCC20-wallet) |
 | **Docs frontend** | Import this repo on Vercel → `kcc20-sdk.vercel.app` (static root, no build) |
+| **Tokens** | [tokens.html](./tokens.html) · [tokens.json](./tokens.json) — every KCC20 on [kron.technology](https://kron.technology) |
+| **For AIs** | [llms.txt](./llms.txt) · [AGENTS.md](./AGENTS.md) · [ai.json](./ai.json) |
 | **Live demo** | [examples/dapp-demo.html](./examples/dapp-demo.html) |
-| **sdkVersion** | `166` |
+| **sdkVersion** | `167` |
 
 Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The user **Approves** in the KCC20 window.
 
@@ -18,7 +20,7 @@ Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The u
 ## Install
 
 ```html
-<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=166"></script>
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=167"></script>
 ```
 
 Or from this repo / jsDelivr (still opens the live PWA):
@@ -30,7 +32,7 @@ Or from this repo / jsDelivr (still opens the live PWA):
 Confirm:
 
 ```js
-window.kcc20.sdkVersion === '166'
+window.kcc20.sdkVersion === '167'
 window.kcc20.origin === 'https://kcc-20-wallet.vercel.app'
 ```
 
@@ -63,7 +65,15 @@ const signed = await kcc.signPskt({
 const { txId } = await kcc.pushTx(signed);   // optional
 ```
 
-If `getPublicKey` / `getUtxoEntries` throw `Connect KCC20 Wallet first` after a successful Connect, you are on a **stale SDK**. Load `sdk.js?v=166` and hard-reload.
+If `getPublicKey` / `getUtxoEntries` throw `Connect KCC20 Wallet first` after a successful Connect, you are on a **stale SDK**. Load `sdk.js?v=167` and hard-reload.
+
+### Buy a KCC20 token on your app
+
+```js
+await kcc.buyKron({ tick: 'KKDAG', amount: '10' }); // amount = KAS to spend
+```
+
+Live ticks: [tokens.html](https://kcc20-sdk.vercel.app/tokens.html) · [tokens.json](https://kcc20-sdk.vercel.app/tokens.json) · [KRON tokenlist](https://api.kron.technology/api/registry/tokenlist?all=1). `sendToken` is a bag transfer, not a buy.
 
 ---
 
@@ -75,7 +85,8 @@ If `getPublicKey` / `getUtxoEntries` throw `Connect KCC20 Wallet first` after a 
 | `signPskt` / `signPsbt` | `getNetwork` |
 | `pushTx` | `getPublicKey` |
 | `sendToken` / `payKcc20` | `getUtxoEntries` |
-| `switchNetwork` | `getBalance` / `getHoldings` / `getTokenBalance` |
+| `buyKron` / `sellKron` / `tradeKron` | `getBalance` / `getHoldings` / `getTokenBalance` |
+| `switchNetwork` | `quoteKron` (best-effort) |
 
 ---
 
@@ -91,7 +102,8 @@ If `getPublicKey` / `getUtxoEntries` throw `Connect KCC20 Wallet first` after a 
 | `getBalance(address?)` | `{ confirmed, unconfirmed, address }` sompi |
 | `signPskt({ txJsonString, options })` | signed Safe JSON **string** |
 | `pushTx(signedJson)` | `{ txId, node }` |
-| `sendToken({ tick, amount, dest })` | KCC20 send (not a KRON curve buy) |
+| `buyKron({ tick, amount })` | Buy KCC20. `amount` = KAS. Wallet builds TRADE |
+| `sendToken({ tick, amount, dest })` | Send a held bag (not a buy) |
 | `disconnect()` | forget this origin |
 
 Events: `kcc.on('accountsChanged'|'networkChanged'|'disconnect', fn)`
@@ -119,8 +131,10 @@ KIP-12: listen for `kaspa:provider` (`rdns: app.kcc20.wallet`) **before** dispat
 
 ```
 sdk.js              — the client (opens the live PWA)
-index.html          — docs site (GitHub Pages)
-docs.html           — same docs
+index.html          — Scorpion landing
+tokens.html         — live KRON KCC20 list for vibe coders
+llms.txt            — what AIs should read first
+docs.html           — API
 CONNECT.md          — markdown API
 examples/dapp-demo.html
 package.json        — @kcc20/sdk
@@ -138,7 +152,7 @@ This repo is a static site. In Vercel: **Add New → Project → import `mrzeku2
 
 Live: GitHub `main` @ `80de2ae` (Scorpion landing). If Vercel still shows the old docs homepage, open the **kcc20-sdk** project → Deployments → latest `main` → **Promote to Production**.
 
-Routes: `/` Scorpion landing (Connect) · `/prompt` Launch SDK (wallet-gated prompt studio) · `/docs` API · `/nilla` · `/taptotip` · `/demo` Try it.
+Routes: `/` Scorpion landing (Connect) · `/tokens` live KRON list · `/prompt` Launch SDK · `/docs` API · `/nilla` · `/taptotip` · `/demo` Try it · `/llms.txt` for agents.
 
 ## License
 

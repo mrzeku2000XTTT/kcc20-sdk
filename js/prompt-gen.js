@@ -4,7 +4,7 @@
   var DOCS = 'https://github.com/mrzeku2000XTTT/kcc20-sdk';
 
   var KINDS = [
-    { id: 'buy', label: 'Buy KRON tokens', re: /buy|purchase|checkout|shop|swap|kron|kkdag|ifwen|token market/i },
+    { id: 'buy', label: 'Buy KRON tokens', re: /buy|purchase|checkout|shop|swap|kron|kkdag|ifwen|token market|utility|my token|launched/i },
     { id: 'vault', label: 'Covenant++ vault', re: /vault|capsule|timelock|freeze|escrow|covenant|lock kas|rent|heir|multisig|hashlock/i },
     { id: 'pay', label: 'Pay / tip / fund', re: /pay|tip|fund|send token|invoice|checkout kaspa|donate/i },
     { id: 'gate', label: 'Token-gated app', re: /gated|membership|holder|discord|access pass|paywall/i },
@@ -34,14 +34,19 @@
       'User must already have created/imported a wallet at ' + WALLET + ' and unlocked with PIN.',
       'Allow popups. No dApp PIN pad. Do not overwrite window.kasware if a real extension exists.',
       'Do not credit the user without a real txId. Connect is not payment.',
-      'Docs: ' + DOCS + '  Nilla: nilla.html  Tap2Tip: taptotip.html'
+      'Docs: ' + DOCS,
+      'Tokens (live KRON list + per-tick prompts): https://kcc20-sdk.vercel.app/tokens.html',
+      'AI sources: https://kcc20-sdk.vercel.app/llms.txt  and  https://kcc20-sdk.vercel.app/tokens.json',
+      'Canonical tokenlist: https://api.kron.technology/api/registry/tokenlist?all=1  Indexer: https://idx.kron.technology/v1/kcc20',
+      'Nilla: nilla.html  Tap2Tip: taptotip.html'
     ].join('\n');
   }
 
   function tmplBuy(intent) {
     return baseRules() + '\n\nUSER INTENT:\n' + intent + '\n\nBUILD: a mobile-friendly platform to BUY any KRON / KCC20 token with KAS.\n' +
       'The wallet builds the swap (same as Home → TRADE). You do NOT assemble curve/pool PSKTs.\n\n' +
-      'UI:\n- Connect KCC20 button\n- Tick input (default KKDAG; user can type KRON, IFWEN, any KRON tick)\n- KAS amount (default 10)\n- Optional preview: try await kcc.quoteKron({ tick, side:"buy", amount }). If it throws, skip — Buy sheet still quotes.\n- Live bag: await kcc.getTokenBalance(tick)\n- Button BUY → only on that tap:\n' +
+      'Load ticks from https://kcc20-sdk.vercel.app/tokens.json (or live KRON tokenlist). Skip empty / "?" ticks. Use symbol as tick.\n' +
+      'UI:\n- Connect KCC20 button\n- Tick picker (default KKDAG; include KRON, IFWEN, and every launched tick)\n- KAS amount (default 10)\n- Optional preview: try await kcc.quoteKron({ tick, side:"buy", amount }). If it throws, skip — Buy sheet still quotes.\n- Live bag: await kcc.getTokenBalance(tick)\n- Button BUY → only on that tap:\n' +
       '    const bought = await kcc.buyKron({ tick: tick.toUpperCase(), amount: String(kas) });\n' +
       '    // bought.txId, bought.quote.tokenHuman, bought.explorer\n' +
       '- Show txId + explorer. Handle User rejected.\n\n' +

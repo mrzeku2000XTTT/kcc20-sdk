@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>KCC20 tokens — live KRON list for vibe coders</title>
+  <meta name="description" content="Every KCC20 token launched on kron.technology. Copy buyKron snippets and vibe-coding prompts. SDK: window.kcc20.buyKron({ tick, amount }). Keys stay in the wallet.">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="stylesheet" href="css/docs.css">
+  <link rel="alternate" type="text/plain" href="llms.txt" title="LLM documentation">
+  <link rel="alternate" type="application/json" href="tokens.json" title="KCC20 tokenlist">
+  <link rel="alternate" type="application/json" href="ai.json" title="AI index">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "KCC20 tokens for vibe coders",
+    "description": "Live KRON / KCC20 tokenlist plus buyKron snippets for any AI coding platform.",
+    "url": "https://kcc20-sdk.vercel.app/tokens.html",
+    "isPartOf": {
+      "@type": "SoftwareApplication",
+      "name": "KCC20 Wallet SDK",
+      "applicationCategory": "DeveloperApplication",
+      "url": "https://kcc20-sdk.vercel.app"
+    }
+  }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand-wrap">
+      <img src="assets/icon.png" alt="">
+      <div class="brand">KCC20 SDK<small>Tokens · vibe builders</small></div>
+    </div>
+    <div class="search-wrap">
+      <input id="tok-q" type="search" placeholder="Search tick, name, KKDAG, KRON…" autocomplete="off">
+      <div class="search-meta" id="tok-meta">Live from kron.technology</div>
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="tokens.html" class="on">Tokens</a>
+      <a href="prompt.html">Prompts</a>
+      <a href="docs.html">Docs</a>
+      <a href="nilla.html">Nilla Gorilla</a>
+      <a href="taptotip.html">Tap2Tip</a>
+      <a href="demo.html">Try it</a>
+      <a href="llms.txt">llms.txt</a>
+      <a href="https://kcc-20-wallet.vercel.app">Wallet</a>
+    </nav>
+  </header>
+
+  <main class="tok-page">
+    <p class="pill">sdk.js?v=167 · buyKron</p>
+    <h1 id="tokens-hero">Build with any KCC20 token</h1>
+    <p>This page lists <b>every KCC20 token launched on <a href="https://kron.technology" target="_blank" rel="noopener">kron.technology</a></b>. Paste a snippet into Replit, Base44, Cursor, v0, or any agent. The user’s KCC20 wallet quotes and builds the swap — your app never holds keys.</p>
+
+    <div class="ok">
+      <b>Buy on your platform:</b> <code>await window.kcc20.buyKron({ tick: 'KKDAG', amount: '10' })</code>
+      — <code>amount</code> is <b>KAS to spend</b>, not tokens.
+      <code>sendToken</code> only moves a bag they already hold.
+    </div>
+
+    <div class="tok-sources">
+      <a href="llms.txt"><code>llms.txt</code></a>
+      <a href="llms-full.txt"><code>llms-full.txt</code></a>
+      <a href="tokens.json"><code>tokens.json</code></a>
+      <a href="ai.json"><code>ai.json</code></a>
+      <a href="AGENTS.md"><code>AGENTS.md</code></a>
+      <a href="api/tokenlist"><code>/api/tokenlist</code></a>
+      <a href="https://api.kron.technology/api/registry/tokenlist?all=1" target="_blank" rel="noopener">KRON tokenlist</a>
+      <a href="https://idx.kron.technology/v1/kcc20" target="_blank" rel="noopener">KRON indexer</a>
+    </div>
+
+    <section class="pg" id="tok-buy">
+      <h2 style="margin-top:0">Buy on this page</h2>
+      <p class="pg-status" id="tok-status">Tap Connect (allow popups). Then Buy — the wallet builds the KRON swap.</p>
+      <div class="pg-grid">
+        <button class="btn gold" id="tok-connect" type="button">Connect SCORPION</button>
+        <button class="btn ghost" id="tok-hold" type="button">Holdings</button>
+        <button class="btn ghost" id="tok-disc" type="button">Disconnect</button>
+      </div>
+      <label for="tok-tick">tick (any launched KCC20)</label>
+      <input id="tok-tick" value="KKDAG" autocomplete="off" spellcheck="false">
+      <label for="tok-amt">KAS to spend</label>
+      <input id="tok-amt" value="10" inputmode="decimal" autocomplete="off">
+      <div class="hero-actions">
+        <button class="btn gold" id="tok-buy-btn" type="button">Buy KRON</button>
+        <button class="btn ghost" id="tok-copy-buy" type="button">Copy buy snippet</button>
+      </div>
+      <pre class="pg-out" id="tok-out"></pre>
+    </section>
+
+    <div class="tok-filters" id="tok-filters">
+      <button type="button" class="kw on" data-filter="all">All</button>
+      <button type="button" class="kw" data-filter="curve">On curve</button>
+      <button type="button" class="kw" data-filter="grad">Graduated</button>
+    </div>
+    <p class="search-meta" id="tok-count"></p>
+    <div class="tok-grid" id="tok-grid">Loading KRON tokenlist…</div>
+
+    <section class="doc-sec" id="wallets">
+      <h2>Any wallet, any vibe platform</h2>
+      <p>Load <code>https://kcc-20-wallet.vercel.app/sdk.js?v=167</code>. You get <code>window.kcc20</code>. KIP-12 announces <code>kaspa:provider</code> <code>rdns: app.kcc20.wallet</code> so a picker can list SCORPION next to KasWare / Kastle. Do not overwrite a real <code>window.kasware</code>.</p>
+      <p>To improve <b>your own</b> wallet: implement the same surface — Connect on click, silent reads after the popup closes, <code>buyKron</code> as a wallet-built TRADE, <code>signPskt</code> P2PK-only with <b>global</b> <code>tx.inputs[]</code> indexes, <code>pushTx</code> returns <code>{ txId, node }</code>.</p>
+<pre>const kcc = window.kcc20;
+await kcc.connect();                          // popup, then it CLOSES
+const bag = await kcc.getTokenBalance('KKDAG');
+const bought = await kcc.buyKron({ tick: 'KKDAG', amount: '10' });
+// bought.txId   bought.quote   bought.explorer</pre>
+    </section>
+  </main>
+  <script src="js/tokens.js"></script>
+</body>
+</html>

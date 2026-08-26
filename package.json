@@ -1,7 +1,7 @@
 {
   "name": "@kcc20/sdk",
-  "version": "1.6.6",
-  "description": "Plug-and-play KCC20 Wallet (SCORPION) dApp SDK. Connect, getPublicKey, getUtxoEntries, signPskt — no Chrome extension.",
+  "version": "1.6.7",
+  "description": "Plug-and-play KCC20 Wallet (SCORPION) dApp SDK. Connect, buyKron any KRON token, signPskt — no Chrome extension.",
   "main": "sdk.js",
   "browser": "sdk.js",
   "unpkg": "sdk.js",
@@ -9,7 +9,11 @@
   "files": [
     "sdk.js",
     "CONNECT.md",
+    "llms.txt",
+    "AGENTS.md",
+    "tokens.json",
     "docs.html",
+    "tokens.html",
     "examples/"
   ],
   "repository": {
@@ -23,9 +27,11 @@
   "keywords": [
     "kaspa",
     "kcc20",
+    "kron",
     "scorpion",
     "wallet",
     "sdk",
+    "buyKron",
     "pskt",
     "dapp"
   ],

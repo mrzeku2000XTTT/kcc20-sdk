@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>SCORPION SDK — launch with your KCC20 wallet</title>
-  <meta name="description" content="Connect SCORPION. Launch the SDK. Vibe-code dApps that buy KRON and use covenant++ vaults. Keys stay in the wallet.">
+  <meta name="description" content="Connect SCORPION. Launch the SDK. Buy every KCC20 token launched on kron.technology with buyKron. Keys stay in the wallet.">
   <link rel="icon" href="assets/icon.png">
   <link rel="stylesheet" href="css/scorpion.css">
+  <link rel="alternate" type="text/plain" href="llms.txt" title="LLM documentation">
+  <link rel="alternate" type="application/json" href="tokens.json" title="KCC20 tokenlist">
+  <link rel="alternate" type="application/json" href="ai.json" title="AI index">
 </head>
 <body class="scorpion">
   <header class="s-top">
@@ -16,6 +19,7 @@
     </a>
     <nav class="s-nav">
       <a href="index.html" class="on">Home</a>
+      <a href="tokens.html">Tokens</a>
       <a href="docs.html">Docs</a>
       <a href="demo.html">Try it</a>
     </nav>
@@ -23,7 +27,7 @@
   <main class="s-main">
     <div class="hero">
       <h1>Desert wallet.<br>Your app.</h1>
-      <p>Connect SCORPION. Keys never leave the PWA. Then launch the SDK and generate a real prompt for Replit, Base44, or Cursor — buy KRON, vaults, pay, gate.</p>
+      <p>Connect SCORPION. Keys never leave the PWA. Then launch the SDK and generate a real prompt for Replit, Base44, or Cursor — buy any KCC20 launched on kron.technology, vaults, pay, gate.</p>
     </div>
     <div class="glass">
       <p class="muted" style="margin-top:0">Create or import a wallet at the PWA if you don’t have one. Then Connect here. Allow popups.</p>
@@ -31,10 +35,17 @@
         <a class="btn ghost" href="https://kcc-20-wallet.vercel.app" target="_blank" rel="noopener">Open KCC20 Wallet</a>
         <button class="btn gold" type="button" data-connect>Connect SCORPION</button>
       </div>
+      <div class="row">
+        <a class="btn ghost" href="tokens.html">Tokens — all KRON KCC20</a>
+      </div>
       <p class="status" id="gate-status" data-addr></p>
       <div class="row row-2" data-need-wallet>
         <a class="btn gold" href="prompt.html">Launch SDK — Prompts</a>
+        <a class="btn ghost" href="tokens.html">Tokens — buy any KCC20</a>
+      </div>
+      <div class="row row-2" data-need-wallet>
         <a class="btn ghost" href="docs.html">API docs</a>
+        <a class="btn ghost" href="llms.txt">llms.txt for AIs</a>
       </div>
       <div class="row row-2" data-need-wallet>
         <a class="btn ghost" href="nilla.html">Nilla Gorilla</a>

@@ -1,0 +1,180 @@
+# KCC20 Wallet SDK — full agent spec
+
+This file is for AI coding agents (Replit, Base44, Cursor, Claude, Grok, Copilot, v0, Windsurf). Humans: https://kcc20-sdk.vercel.app/docs.html
+
+## Identity
+
+- Product: KCC20 Wallet (SCORPION)
+- dApp client: `window.kcc20` from `https://kcc-20-wallet.vercel.app/sdk.js?v=167`
+- Wallet UI / keys / PIN: `https://kcc-20-wallet.vercel.app` (PWA). Keys never leave this origin.
+- Docs site: `https://kcc20-sdk.vercel.app`
+- SDK repo: `https://github.com/mrzeku2000XTTT/kcc20-sdk`
+- Wallet repo: `https://github.com/mrzeku2000XTTT/KCC20-wallet`
+- postMessage namespace: `ns:'kcc20'`
+- Origin lock: `https://kcc-20-wallet.vercel.app`
+- KIP-12: event `kaspa:provider`, rdns `app.kcc20.wallet`
+- Alias: `window.kcc20wallet` same object
+
+Not a Chrome extension. No `chrome.runtime`. Do not invent a dApp PIN pad.
+
+## Token sources (live)
+
+All launched KCC20 / KRON tokens:
+
+1. `GET https://api.kron.technology/api/registry/tokenlist?all=1`
+2. Proxy on this host: `GET https://kcc20-sdk.vercel.app/api/tokenlist`
+3. Compact snapshot: `https://kcc20-sdk.vercel.app/tokens.json` (`ticks[]` + `tokens[]`)
+4. UI: `https://kcc20-sdk.vercel.app/tokens.html`
+5. Balances / UTXOs: `https://idx.kron.technology/v1/kcc20`
+
+Each token has `symbol` (use as `tick`), `name`, `decimals`, `logoURI`, `covenantId`, `extensions.curveCovenantId`, `extensions.poolCovenantId`, `extensions.graduated`.
+
+Skip empty ticks and ticks containing `?`.
+
+If the user names a tick, look it up in tokens.json / tokenlist. If missing, still call `buyKron` with that tick — the wallet will error if KRON does not know it.
+
+## Install
+
+```html
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=167"></script>
+```
+
+```js
+window.addEventListener('kcc20#initialized', (e) => {
+  const kcc = e.detail; // === window.kcc20
+});
+```
+
+Confirm `kcc.sdkVersion === "167"` or higher. Optional before load: `window.KCC20_WALLET_ORIGIN = 'https://kcc-20-wallet.vercel.app'`.
+
+Only call Connect from a user click. Never on page load. Never on every route. Browsers block popups without a gesture.
+
+## Popup vs silent
+
+POPUP (opens PWA, then usually closes):
+`connect`, `requestAccounts`, `signPskt`, `pushTx`, `sendToken`, `buyKron`, `sellKron`, `tradeKron`, `switchNetwork`
+
+SILENT (after Connect succeeded and popup closed):
+`getAccounts`, `getNetwork`, `getPublicKey`, `getUtxoEntries`, `getBalance`, `getHoldings`, `getTokenBalance`, `getState`, `detect`, `quoteKron` (best-effort)
+
+If silent calls throw `Connect KCC20 Wallet first` after a successful Connect, the SDK is stale. Reload `sdk.js?v=167`.
+
+## Buy KCC20 on YOUR platform
+
+This is the path for a shop / marketplace / game checkout / membership.
+
+```js
+const kcc = window.kcc20;
+await kcc.connect(); // click
+const bought = await kcc.buyKron({
+  tick: 'KKDAG',   // any KRON symbol from the tokenlist
+  amount: '10'     // KAS to spend, string or number ok
+});
+// { txId, quote, explorer }
+```
+
+Aliases: `buyToken`, `tradeKron({ tick, side:'buy', amount })`, `request('buyKron', { tick, amount })`.
+
+Optional preview:
+
+```js
+const q = await kcc.quoteKron({ tick: 'KKDAG', side: 'buy', amount: '10' });
+```
+
+If `quoteKron` throws, skip it. The Buy sheet still quotes.
+
+Sell:
+
+```js
+await kcc.sellKron({ tick: 'KKDAG', amount: '100' }); // amount = tokens
+```
+
+Rules:
+- Mainnet only. TN10 throws from the wallet.
+- Do NOT use `sendToken` to buy.
+- Do NOT assemble curve/pool/covenant PSKTs for a shop.
+- Credit the user only after `bought.txId`.
+- Handle `User rejected`. No retry loop.
+
+## sendToken (Fund / tip / pay)
+
+Moves a bag they already hold.
+
+```js
+await kcc.sendToken({
+  tick: 'KKDAG',
+  amount: '10',
+  dest: 'kaspa:q…' // FULL address, kaspa:q not kaspa:p
+});
+```
+
+Aliases: `sendKcc20`, `payToken`, `payKcc20`, `fundCredits`.
+
+## Token gate
+
+```js
+const bag = await kcc.getTokenBalance('KKDAG');
+if (Number(bag.balance) >= 1) unlock();
+else await kcc.buyKron({ tick: 'KKDAG', amount: '10' });
+```
+
+Connect is not membership. Holding the tick is.
+
+## Builder path (Nilla / custom PSKT)
+
+You build unsigned rusty-kaspa Safe JSON. Wallet signs P2PK only.
+
+```js
+const signed = await kcc.signPskt({
+  txJsonString: unsignedSafeJson,
+  options: { signInputs: [{ index: GLOBAL_P2PK_INDEX, sighashType: 1 }] }
+});
+const { txId } = await kcc.pushTx(signed); // object, not a hex string
+```
+
+`signInputs.index` is the global `tx.inputs[i]` slot. Typical KRON buy: last input is user P2PK, **not** 0 if 0 is the curve. Never list P2SH (`aa20…87`), curve, inventory, pool, or already-signed inputs — node error `false stack entry at end of script execution`.
+
+v167 skips P2SH and already-signed even if you list them, and only signs unsigned P2PK owned by the connected wallet. Still pass the correct global index.
+
+Funding input MUST include `utxo { amount, scriptPublicKey, address }`.
+
+## Other calls
+
+```js
+kcc.getAccounts()
+kcc.getNetwork()          // kaspa_mainnet | kaspa_testnet_10
+kcc.switchNetwork(id)
+kcc.getPublicKey()        // hex
+kcc.getUtxoEntries(addr)
+kcc.getBalance(addr)      // { confirmed, unconfirmed, address } sompi
+kcc.getHoldings()
+kcc.getTokenBalance(tick)
+kcc.getState()
+kcc.detect()              // sync
+kcc.disconnect()
+kcc.on('accountsChanged'|'networkChanged'|'disconnect', fn)
+kcc.request(method, params)
+```
+
+## Wallets (improve yours)
+
+KCC20 is a hosted PWA, KasWare-shaped.
+
+- Do not overwrite `window.kasware` if a real extension exists. Offer both.
+- Listen for `kaspa:provider` before `kaspa:requestProvider`.
+- To make another wallet KCC20-compatible: implement Connect-on-click, silent session after popup close, wallet-built `buyKron` (same as Home TRADE), `signPskt` P2PK-only global indexes, `pushTx` → `{ txId, node }`.
+- Never hold user funds on a company server. Never ship a PIN in a public prompt.
+
+## Security
+
+- Never ask for seed, PIN, 64-hex private key.
+- Never keep the wallet window open for silent reads.
+- Disconnect must focus the dApp then close the popup — do not steal the next tab.
+- This docs site PIN (if any) is NOT the wallet PIN.
+- Do not credit without a real txId.
+
+## Vibe platforms
+
+Replit, Base44, Cursor, v0, Claude artifacts, Grok, Copilot Workspace: generate a Connect button + tick picker from `tokens.json` + Buy that calls `buyKron`. Done when 10 KAS of a real tick (KKDAG / KRON / IFWEN / user’s tick) signs in the PWA and the bag increases.
+
+Human Tokens tab with copy-paste prompts: https://kcc20-sdk.vercel.app/tokens.html

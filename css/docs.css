@@ -220,3 +220,55 @@ th { color: #aaa; font-weight: 600; font-size: 12px; text-transform: uppercase; 
   .brand small { display: none; }
   .pg-grid { grid-template-columns: 1fr; }
 }
+.tok-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px 96px;
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
+}
+.tok-sources {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 14px 0 8px;
+}
+.tok-sources a {
+  border: 1px solid var(--line);
+  background: #161618;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+  color: var(--gold2);
+}
+.tok-filters { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+.tok-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 12px 0 32px;
+}
+.tok-card {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 16px;
+  padding: 14px;
+}
+.tok-head { display: flex; align-items: center; gap: 10px; }
+.tok-head div { flex: 1; min-width: 0; }
+.tok-head b { display: block; letter-spacing: -0.2px; }
+.tok-head small { display: block; color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tok-logo {
+  width: 40px; height: 40px; border-radius: 12px; object-fit: cover;
+  background: #1c1c1e; flex-shrink: 0;
+}
+.tok-letter {
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: var(--gold);
+}
+.tok-id { font-size: 11px; color: #777; margin: 8px 0 10px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+.tok-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tok-actions .btn { width: 100%; justify-content: center; height: 40px; font-size: 12px; }
+@media (max-width: 900px) {
+  .tok-page { padding-top: 16px; }
+}

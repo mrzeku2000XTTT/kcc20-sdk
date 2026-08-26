@@ -20,6 +20,7 @@
     </div>
     <nav>
       <a href="index.html">Home</a>
+      <a href="tokens.html">Tokens</a>
       <a href="prompt.html">Prompts</a>
       <a href="docs.html" class="on">Docs</a>
       <a href="nilla.html">Nilla Gorilla</a>
@@ -55,7 +56,9 @@
       <div class="g">Sign / send</div>
       <a href="#signPskt">signPskt</a>
       <a href="#pushTx">pushTx</a>
+      <a href="#buyKron">buyKron</a>
       <a href="#sendToken">sendToken</a>
+      <a href="tokens.html">Tokens (live KRON)</a>
       <a href="#request">request()</a>
       <div class="g">Guides</div>
       <a href="#events">Events</a>
@@ -71,7 +74,7 @@
     </aside>
     <main>
       <section class="doc-sec" id="can-do" data-keywords="overview capabilities what can people do scorpion kcc20">
-        <p class="pill">sdkVersion 166</p>
+        <p class="pill">sdkVersion 167</p>
         <h1>What people can do with the KCC20 SDK</h1>
         <p>This is the <b>dApp client</b>. It does not hold keys. It opens the hosted PWA at <code>https://kcc-20-wallet.vercel.app</code>, talks over <code>postMessage</code> <code>ns:'kcc20'</code>, and gives your app a KasWare-shaped API: <code>window.kcc20</code>.</p>
         <table>
@@ -84,7 +87,8 @@
             <tr><td>Show KAS / KCC20 bags</td><td><code>getBalance()</code>, <code>getHoldings()</code>, <code>getTokenBalance('KKDAG')</code></td></tr>
             <tr><td>Let the user sign your PSKT</td><td><code>signPskt({ txJsonString, options })</code> — you build, they sign</td></tr>
             <tr><td>Broadcast the signed tx</td><td><code>pushTx(signed)</code> or your own node</td></tr>
-            <tr><td>Send a KCC20 token (TTT Fund)</td><td><code>sendToken({ tick, amount, dest })</code> — wallet builds the KRON send</td></tr>
+            <tr><td>Buy any KRON / KCC20 token with KAS</td><td><code>buyKron({ tick, amount })</code> — amount is KAS. Wallet builds Home TRADE. Live list: <a href="tokens.html">Tokens</a></td></tr>
+            <tr><td>Send a KCC20 token (TTT Fund)</td><td><code>sendToken({ tick, amount, dest })</code> — bag they already hold, not a buy</td></tr>
             <tr><td>Listen for account / network changes</td><td><code>on('accountsChanged'|'networkChanged'|'disconnect')</code></td></tr>
             <tr><td>List next to KasWare in a picker</td><td>KIP-12 <code>kaspa:provider</code> <code>rdns: app.kcc20.wallet</code></td></tr>
             <tr><td>Disconnect</td><td><code>disconnect()</code> — popup closes, stay on your tab</td></tr>
@@ -133,10 +137,10 @@
 
       <section class="doc-sec" id="install" data-keywords="install script sdk.js sdkVersion origin load click initialized">
         <h2>Install</h2>
-        <p class="sig">script src="https://kcc-20-wallet.vercel.app/sdk.js?v=166"</p>
-        <p>Creates <code>window.kcc20</code> and <code>window.kcc20wallet</code>. Fires <code>kcc20#initialized</code>. Require <code>kcc.sdkVersion === "166"</code>.</p>
+        <p class="sig">script src="https://kcc-20-wallet.vercel.app/sdk.js?v=167"</p>
+        <p>Creates <code>window.kcc20</code> and <code>window.kcc20wallet</code>. Fires <code>kcc20#initialized</code>. Require <code>kcc.sdkVersion === "167"</code> for <code>buyKron</code>.</p>
 <pre>const s = document.createElement('script');
-s.src = 'https://kcc-20-wallet.vercel.app/sdk.js?v=166';
+s.src = 'https://kcc-20-wallet.vercel.app/sdk.js?v=167';
 document.head.appendChild(s);
 window.addEventListener('kcc20#initialized', (e) => {
   const kcc = e.detail; // same as window.kcc20
@@ -274,10 +278,25 @@ const { txId } = await kcc.pushTx(signed);</pre>
         <p>Broadcasts a signed Safe JSON string. Alias: <code>request('broadcast', { signedTx })</code>. Optional if you submit to your own node. Do not double-broadcast.</p>
       </section>
 
+      <section class="doc-sec" id="buyKron" data-keywords="buyKron buyToken quoteKron sellKron tradeKron KRON KKDAG IFWEN tokenlist shop marketplace">
+        <h2>buyKron / buyToken <span class="tag pop">popup</span></h2>
+        <p class="sig">await kcc.buyKron({ tick: 'KKDAG', amount: '10' }) → { txId, quote, explorer }</p>
+        <p>Let a user buy any KCC20 launched on <a href="https://kron.technology">kron.technology</a> <b>on your platform</b>. The wallet quotes and builds the same swap as Home → TRADE. You do <b>not</b> assemble curve/pool PSKTs. <code>amount</code> is <b>KAS to spend</b>.</p>
+        <ul>
+          <li><code>tick</code> — KRON <code>symbol</code>. Live list: <a href="tokens.html">Tokens tab</a>, <a href="tokens.json">tokens.json</a>, <a href="https://api.kron.technology/api/registry/tokenlist?all=1">KRON tokenlist</a>.</li>
+          <li>Skip empty ticks and ticks containing <code>?</code>.</li>
+          <li>Optional preview: <code>quoteKron({ tick, side:'buy', amount })</code>. If it throws, skip — Buy still quotes.</li>
+          <li>Sell: <code>sellKron({ tick, amount })</code> where amount is <b>tokens</b>.</li>
+          <li>Aliases: <code>buyToken</code>, <code>tradeKron({ tick, side, amount })</code>, <code>request('buyKron', { tick, amount })</code>.</li>
+          <li>Needs <code>sdk.js?v=167</code>. Mainnet only.</li>
+        </ul>
+<pre>await kcc.buyKron({ tick: 'KKDAG', amount: '10' });</pre>
+      </section>
+
       <section class="doc-sec" id="sendToken" data-keywords="sendToken sendKcc20 payToken payKcc20 fundCredits KKDAG dest treasury TTT">
         <h2>sendToken / payKcc20 / fundCredits <span class="tag pop">popup</span></h2>
         <p class="sig">await kcc.sendToken({ tick, amount, dest }) → { txId, tick, amount, raw, dest, from, explorer }</p>
-        <p>The <b>wallet</b> builds a native KRON/KCC20 send (same path as Home → Send). User Signs in the PWA. Use this for TTT Fund / “pay N KKDAG”. Do <b>not</b> use it for a KRON curve buy — that is a tx you build, then <code>signPskt</code>.</p>
+        <p>The <b>wallet</b> builds a native KRON/KCC20 send (same path as Home → Send). User Signs in the PWA. Use this for TTT Fund / “pay N KKDAG”. Do <b>not</b> use it to buy — buying is <a href="#buyKron"><code>buyKron</code></a>.</p>
         <ul>
           <li><code>tick</code> default <code>KKDAG</code>. 2–12 A–Z0–9.</li>
           <li><code>amount</code> human string (e.g. <code>"10"</code>). If missing, host may default to 10.</li>
@@ -314,7 +333,7 @@ kcc.removeListener(event, fn);</pre>
       <section class="doc-sec" id="session" data-keywords="session sessionStorage kcc20_dapp_sess_v1 sdkVersion stale">
         <h2>Session</h2>
         <p>After Connect, <code>sessionStorage kcc20_dapp_sess_v1</code> stores accounts, network, lastState (including publicKey). Popup can close. Refresh of your dApp tab restores it until Disconnect.</p>
-        <p>If <code>window.kcc20.sdkVersion</code> is missing or not <code>"166"</code>: <code>delete window.kcc20; delete window.kcc20wallet;</code> then inject <code>sdk.js?v=166</code> and hard-reload. The old IIFE returns early and keeps the broken “Connect first” behavior.</p>
+        <p>If <code>window.kcc20.sdkVersion</code> is missing or not <code>"167"</code>: <code>delete window.kcc20; delete window.kcc20wallet;</code> then inject <code>sdk.js?v=167</code> and hard-reload. The old IIFE returns early and keeps the broken “Connect first” behavior.</p>
       </section>
 
       <section class="doc-sec" id="errors" data-keywords="errors rejected connect first popup blocked timeout">
@@ -353,7 +372,7 @@ kcc.removeListener(event, fn);</pre>
         </table>
         <h3>What a dApp must not do</h3>
         <ul>
-          <li>Load <code>sdk.js</code> from a random mirror. Pin <code>kcc-20-wallet.vercel.app/sdk.js?v=166</code> (or this GitHub repo).</li>
+          <li>Load <code>sdk.js</code> from a random mirror. Pin <code>kcc-20-wallet.vercel.app/sdk.js?v=167</code> (or this GitHub repo).</li>
           <li>Ask for a seed, PIN, or hex key. If a site does, it is phishing — close it.</li>
           <li>Treat Connect as a payment. Connect only shares an address. Spend needs Sign.</li>
           <li>Auto-connect on page load.</li>
@@ -402,6 +421,9 @@ window.dispatchEvent(new Event('kaspa:requestProvider'));</pre>
   dest: 'kaspa:qq5yhvly6338dspa9mm24g8q6chvy6v0jww3k4dgqywh0lju5mmm5pj334ews'
 });</pre>
         <p>Credit off-chain only after <code>txId</code>. Do not fake a grant.</p>
+        <h3>Shop that sells any launched KCC20</h3>
+        <p>Load ticks from <a href="tokens.json">tokens.json</a> / <a href="tokens.html">Tokens tab</a>. Buy is <code>buyKron</code>, not <code>sendToken</code>.</p>
+<pre>await kcc.buyKron({ tick: 'KKDAG', amount: '10' });</pre>
       </section>
 
       <section class="doc-sec" id="not" data-keywords="not extension keys chrome custodial invent route">
@@ -409,7 +431,7 @@ window.dispatchEvent(new Event('kaspa:requestProvider'));</pre>
         <ul>
           <li>Not a Chrome extension. No <code>chrome.runtime</code>.</li>
           <li>Not a hosted signer. If the PWA is locked or killed, signing stops.</li>
-          <li>Does not invent routes or amounts. You (or KRON/Cook) build the tx except <code>sendToken</code>.</li>
+          <li>Does not invent routes or amounts. You (or KRON/Cook) build the tx except <code>sendToken</code> / <code>buyKron</code> / <code>sellKron</code> (wallet-built).</li>
           <li>Does not send KAS blindly (<code>sendKaspa</code> rejected on the shim).</li>
           <li>Does not replace the wallet app. Wallet UI lives in <a href="https://github.com/mrzeku2000XTTT/KCC20-wallet">KCC20-wallet</a>.</li>
         </ul>

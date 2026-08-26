@@ -1,0 +1,73 @@
+# KCC20 Wallet SDK (SCORPION)
+
+> Plug-and-play Kaspa KCC20 dApp SDK. Not a Chrome extension. Keys never leave the hosted PWA. Any vibe-coding platform (Replit, Base44, Cursor, v0, Claude, Grok, Copilot) can load one script and let a user buy every KCC20 token launched on kron.technology.
+
+Website: https://kcc20-sdk.vercel.app
+Wallet (keys live here): https://kcc-20-wallet.vercel.app
+SDK script: https://kcc-20-wallet.vercel.app/sdk.js?v=167
+GitHub: https://github.com/mrzeku2000XTTT/kcc20-sdk
+Wallet app: https://github.com/mrzeku2000XTTT/KCC20-wallet
+
+Require `window.kcc20.sdkVersion >= "167"` (`buyKron` exists). Only call Connect from a **user click**. After Approve the popup **closes on purpose**. Then silent reads work.
+
+## Read next
+
+- [Full API for agents](https://kcc20-sdk.vercel.app/llms-full.txt)
+- [Agent rules](https://kcc20-sdk.vercel.app/AGENTS.md)
+- [Machine index](https://kcc20-sdk.vercel.app/ai.json)
+- [Live tokenlist (this host)](https://kcc20-sdk.vercel.app/api/tokenlist)
+- [Compact ticks + buy snippets](https://kcc20-sdk.vercel.app/tokens.json)
+- [Human Tokens tab](https://kcc20-sdk.vercel.app/tokens.html)
+- [API docs](https://kcc20-sdk.vercel.app/docs.html)
+- [Nilla / signPskt](https://kcc20-sdk.vercel.app/nilla.html)
+- [Tap2Tip / Base44 buyKron](https://kcc20-sdk.vercel.app/taptotip.html)
+- [Prompt studio](https://kcc20-sdk.vercel.app/prompt.html)
+
+## Canonical KRON sources (do not invent ticks)
+
+- Tokenlist: https://api.kron.technology/api/registry/tokenlist
+- Tokenlist all: https://api.kron.technology/api/registry/tokenlist?all=1
+- Indexer: https://idx.kron.technology/v1/kcc20
+- Launch site: https://kron.technology
+
+Skip tickers that are empty or contain `?`. Use `symbol` as `tick`. `buyKron({ tick, amount })` amount is **KAS to spend**, not tokens.
+
+## Smallest shop (copy this)
+
+```html
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=167"></script>
+```
+
+```js
+const kcc = window.kcc20;
+const accounts = await kcc.connect();            // click only
+const bag = await kcc.getTokenBalance('KKDAG');  // silent
+const bought = await kcc.buyKron({ tick: 'KKDAG', amount: '10' });
+// bought.txId   bought.quote   bought.explorer
+```
+
+`sendToken({ tick, amount, dest })` transfers a bag they **already hold**. Do **not** use it to buy. Do **not** build KRON curve/pool PSKTs for a shop — the wallet does that in `buyKron`.
+
+## Other methods
+
+| Call | When |
+|---|---|
+| `connect()` | Popup. Once per session. |
+| `getAccounts` / `getNetwork` / `getPublicKey` / `getUtxoEntries` / `getBalance` / `getHoldings` / `getTokenBalance` | Silent after Connect |
+| `buyKron({ tick, amount })` | Buy KCC20 with KAS. amount = KAS |
+| `sellKron({ tick, amount })` | Sell. amount = tokens |
+| `quoteKron({ tick, side, amount })` | Optional preview |
+| `sendToken({ tick, amount, dest })` | Send held bag to `kaspa:q…` |
+| `signPskt({ txJsonString, options })` | You built the tx. P2PK only. `signInputs.index` is **global** `tx.inputs[]` |
+| `pushTx(signed)` | Returns `{ txId, node }` — read `.txId` |
+| `disconnect()` | Stay on the dApp tab |
+
+Never ask for seed, PIN, or 64-hex. Never overwrite a real `window.kasware`. KIP-12: `kaspa:provider` `rdns: app.kcc20.wallet`.
+
+## Wallets
+
+This SDK helps **any** dApp wallet picker and any Kaspa wallet:
+
+1. dApps load `sdk.js` → users sign in KCC20 (SCORPION).
+2. Wallet-agnostic apps listen for `kaspa:provider` and list SCORPION next to KasWare.
+3. Other wallets can copy the same surface: Connect on click, silent reads after close, wallet-built `buyKron`, `signPskt` P2PK-only global indexes, `pushTx` → `{ txId, node }`.

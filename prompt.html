@@ -15,6 +15,7 @@
     </a>
     <nav class="s-nav">
       <a href="index.html">Home</a>
+      <a href="tokens.html">Tokens</a>
       <a href="prompt.html" class="on">Prompts</a>
       <a href="docs.html">Docs</a>
       <a href="demo.html">Try it</a>
@@ -60,7 +61,8 @@
       var detectEl = document.getElementById('detect');
       var out = document.getElementById('out');
       var examples = [
-        { t: 'Buy KRON shop', v: 'A mobile platform to buy any KRON token (KKDAG, KRON, IFWEN) with KAS using buyKron. Connect SCORPION, quote, buy, show txId.' },
+        { t: 'Buy KRON shop', v: 'A mobile platform to buy any KRON token launched on kron.technology (load ticks from https://kcc20-sdk.vercel.app/tokens.json) with KAS using buyKron. Connect SCORPION, quote, buy, show txId.' },
+        { t: 'Build with my token', v: 'Utility app for my KCC20 token. Load the tick from the KRON tokenlist. Users Connect, buy it with buyKron, gate features on getTokenBalance, send tips with sendToken. Keys stay in SCORPION.' },
         { t: 'Covenant++ vaults', v: 'A vault app where users describe rules (lock 50 KAS for 7 days, rent due the 1st, freeze KKDAG 6 months, escrow for a freelance job) and sign with our SDK. Keys stay in SCORPION. Generative policy UI.' },
         { t: 'Tip / paywall', v: 'Paywall and tip jar. sendToken KKDAG to a kaspa:q. Unlock content after txId.' },
         { t: 'Token gate', v: 'Membership: must hold KKDAG. If not, offer buyKron. Then unlock the club.' },
