@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Launch SDK — generate your dApp prompt</title>
+  <link rel="icon" href="assets/icon.png">
+  <link rel="stylesheet" href="css/scorpion.css">
+</head>
+<body class="scorpion">
+  <header class="s-top">
+    <a class="s-brand" href="index.html">
+      <img src="assets/icon.png" alt="">
+      <span><b>SCORPION</b><small>Prompt studio</small></span>
+    </a>
+    <nav class="s-nav">
+      <a href="index.html">Home</a>
+      <a href="prompt.html" class="on">Prompts</a>
+      <a href="docs.html">Docs</a>
+      <a href="demo.html">Try it</a>
+    </nav>
+  </header>
+
+  <div class="s-lock" id="sdk-lock" data-strict="1">
+    <div class="glass">
+      <h2>Connect SCORPION</h2>
+      <p class="muted">This studio is for people who already use the wallet. Create one at the PWA, then Connect. We never see your PIN.</p>
+      <div class="row">
+        <a class="btn ghost" href="https://kcc-20-wallet.vercel.app" target="_blank" rel="noopener">Create / open wallet</a>
+        <button class="btn gold" type="button" data-connect>Connect wallet</button>
+      </div>
+      <p class="status" id="gate-status"></p>
+    </div>
+  </div>
+
+  <main class="s-main">
+    <div class="hero">
+      <h1>What are you building?</h1>
+      <p>Write it in your words. We detect buy / vault / pay / gate / PSKT and write a prompt your coding agent can actually run on <code>window.kcc20</code>.</p>
+      <p class="status" data-addr></p>
+    </div>
+    <div class="glass">
+      <div class="chips" id="chips"></div>
+      <textarea class="intent" id="intent" placeholder="e.g. I want a mobile shop where anyone connects SCORPION and buys any KRON token with KAS…"></textarea>
+      <p class="detect" id="detect"></p>
+      <div class="row row-2">
+        <button class="btn gold" type="button" id="gen">Generate prompt</button>
+        <button class="btn ghost" type="button" id="copy">Copy</button>
+      </div>
+      <p class="muted" style="margin:12px 0 6px">Paste into Replit, Base44, Cursor, or Claude.</p>
+      <textarea class="out" id="out" readonly placeholder="Your custom prompt lands here."></textarea>
+    </div>
+  </main>
+  <script src="js/gate.js"></script>
+  <script src="js/prompt-gen.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var chips = document.getElementById('chips');
+      var intent = document.getElementById('intent');
+      var detectEl = document.getElementById('detect');
+      var out = document.getElementById('out');
+      var examples = [
+        { t: 'Buy KRON shop', v: 'A mobile platform to buy any KRON token (KKDAG, KRON, IFWEN) with KAS using buyKron. Connect SCORPION, quote, buy, show txId.' },
+        { t: 'Covenant++ vaults', v: 'A vault app where users describe rules (lock 50 KAS for 7 days, rent due the 1st, freeze KKDAG 6 months, escrow for a freelance job) and sign with our SDK. Keys stay in SCORPION. Generative policy UI.' },
+        { t: 'Tip / paywall', v: 'Paywall and tip jar. sendToken KKDAG to a kaspa:q. Unlock content after txId.' },
+        { t: 'Token gate', v: 'Membership: must hold KKDAG. If not, offer buyKron. Then unlock the club.' },
+        { t: 'Nilla-style PSKT', v: 'I build unsigned KRON PSKTs myself. User only signPskt with global P2PK indexes.' }
+      ];
+      examples.forEach(function (ex) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = ex.t;
+        b.onclick = function () {
+          intent.value = ex.v;
+          document.querySelectorAll('#chips button').forEach(function (x) { x.classList.remove('on'); });
+          b.classList.add('on');
+          run();
+        };
+        chips.appendChild(b);
+      });
+      function run() {
+        var g = window.kcc20PromptGen.generate(intent.value);
+        detectEl.textContent = 'Detected: ' + g.kind.label;
+        out.value = g.prompt;
+      }
+      document.getElementById('gen').onclick = run;
+      intent.addEventListener('input', function () {
+        var k = window.kcc20PromptGen.detect(intent.value);
+        detectEl.textContent = intent.value.trim() ? ('Will generate: ' + k.label) : '';
+      });
+      document.getElementById('copy').onclick = function () {
+        navigator.clipboard.writeText(out.value || '').then(function () {
+          document.getElementById('copy').textContent = 'Copied';
+        });
+      };
+    });
+  </script>
+</body>
+</html>

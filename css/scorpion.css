@@ -1,0 +1,102 @@
+:root {
+  color-scheme: dark;
+  --gold: #c9a36a;
+  --gold2: #f3e2bf;
+  --ink: #0b0908;
+  --muted: rgba(243, 226, 191, 0.72);
+  --line: rgba(243, 226, 191, 0.16);
+  --glass: rgba(12, 10, 9, 0.55);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body.scorpion {
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #f7f0e4;
+  background: #080706 url("../assets/desert.jpg") center 42% / cover no-repeat fixed;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100dvh;
+}
+.scorpion::before {
+  content: "";
+  position: fixed; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8,7,6,0.55) 0%, rgba(8,7,6,0.28) 38%, rgba(8,7,6,0.72) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+.s-top, .s-main, .s-lock { position: relative; z-index: 1; }
+.s-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 12px 16px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+.s-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+.s-brand img { width: 36px; height: 36px; border-radius: 10px; }
+.s-brand b { display: block; font-size: 15px; letter-spacing: 0.4px; }
+.s-brand small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; }
+.s-nav { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.s-nav a, .s-chip {
+  flex: 0 0 auto; color: var(--gold2); text-decoration: none;
+  border: 1px solid var(--line); background: var(--glass);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-radius: 999px; padding: 8px 12px; font-size: 13px; font-weight: 650;
+}
+.s-nav a.on { border-color: var(--gold); background: rgba(201,163,106,0.18); }
+.s-main {
+  max-width: 760px; margin: 0 auto;
+  padding: 12px 16px 96px;
+  padding-bottom: max(96px, env(safe-area-inset-bottom));
+}
+.hero { text-align: center; padding: 28px 8px 18px; }
+.hero h1 {
+  font-size: clamp(32px, 9vw, 52px); letter-spacing: -1.2px;
+  margin: 0 0 10px; line-height: 1.05;
+}
+.hero p { color: var(--muted); margin: 0 auto 18px; max-width: 34em; }
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  padding: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 0 18px; border: 0; border-radius: 14px;
+  font-weight: 750; cursor: pointer; font-family: inherit; text-decoration: none;
+  width: 100%;
+}
+.btn.gold { background: linear-gradient(180deg, #f3e2bf, #c9a36a); color: #1a140c; }
+.btn.ghost { background: rgba(255,255,255,0.06); color: var(--gold2); border: 1px solid var(--line); }
+.row { display: grid; gap: 10px; margin-top: 12px; }
+@media (min-width: 560px) {
+  .row-2 { grid-template-columns: 1fr 1fr; }
+}
+.status { font-size: 13px; color: var(--gold2); text-align: center; margin: 10px 0 0; word-break: break-all; min-height: 1.4em; }
+.gate-hid { display: none !important; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.chips button {
+  border: 1px solid var(--line); background: rgba(0,0,0,0.25); color: var(--gold2);
+  border-radius: 999px; padding: 8px 12px; font-size: 12px; font-weight: 650;
+  cursor: pointer; font-family: inherit;
+}
+.chips button.on { border-color: var(--gold); background: rgba(201,163,106,0.2); }
+textarea.intent, .out {
+  width: 100%; min-height: 120px; resize: vertical;
+  border-radius: 16px; border: 1px solid var(--line);
+  background: rgba(0,0,0,0.35); color: #f7f0e4;
+  padding: 14px; font: 15px/1.45 inherit;
+}
+.out { min-height: 280px; font: 12px/1.45 ui-monospace, Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
+.detect { font-size: 13px; color: var(--gold); margin: 8px 0; min-height: 1.3em; }
+.s-lock {
+  position: fixed; inset: 0; z-index: 30;
+  display: grid; place-items: center; padding: 20px;
+  background: rgba(8,7,6,0.55);
+}
+.s-lock .glass { max-width: 420px; width: 100%; text-align: center; }
+h2 { font-size: 22px; margin: 0 0 8px; }
+.muted { color: var(--muted); }
