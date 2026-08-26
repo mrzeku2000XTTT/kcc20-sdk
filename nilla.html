@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nilla Gorilla — SCORPION / KCC20</title>
+  <meta name="description" content="Everything Nilla Gorilla needs to connect SCORPION, read pubkey/UTXOs, sign KRON PSKTs, and broadcast. signInputs are global indexes.">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="stylesheet" href="css/docs.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand-wrap">
+      <img src="assets/icon.png" alt="">
+      <div class="brand">KCC20 SDK<small>Nilla Gorilla tab</small></div>
+    </div>
+    <div class="search-wrap">
+      <input id="q" type="search" placeholder="Search Nilla: signInputs, KRON, false stack…" autocomplete="off">
+      <div class="search-meta" id="search-meta"></div>
+    </div>
+    <nav>
+      <a href="index.html">Docs</a>
+      <a href="nilla.html" class="on">Nilla Gorilla</a>
+      <a href="demo.html">Demo</a>
+      <a href="https://github.com/mrzeku2000XTTT/kcc20-sdk">GitHub</a>
+      <a href="https://kcc-20-wallet.vercel.app">Wallet</a>
+    </nav>
+  </header>
+  <div class="keywords" id="keywords"></div>
+  <div class="wrap">
+    <aside>
+      <div class="g">Nilla</div>
+      <a href="#nilla">Where we are</a>
+      <a href="#do-not">Do not touch</a>
+      <a href="#install-nilla">Install</a>
+      <a href="#session-nilla">After Connect</a>
+      <a href="#prepare-nilla">Prepare</a>
+      <a href="#sign-nilla">signPskt</a>
+      <a href="#broadcast-nilla">Broadcast</a>
+      <a href="#false-stack">false stack</a>
+      <a href="#checklist">10-point check</a>
+      <a href="#prompt">Copy Replit prompt</a>
+    </aside>
+    <main>
+      <section class="doc-sec" id="nilla" data-keywords="Nilla Gorilla SCORPION status connected KRON">
+        <p class="pill">SCORPION · BUILD 167 · sdk v166</p>
+        <h1>Nilla Gorilla</h1>
+        <p>This tab is the contract for Nilla (and any KRON copilot). Plug in like KasWare, using <code>window.kcc20</code>. You build the unsigned tx. The user signs in the KCC20 PWA. Keys never leave the wallet.</p>
+        <table>
+          <thead><tr><th>Step</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>SCORPION selected (not KasWare)</td><td>Done</td></tr>
+            <tr><td>Connect → real PWA popup → same kaspa:q in Nilla</td><td>Done</td></tr>
+            <tr><td>Silent getAccounts / getNetwork / getPublicKey / getUtxoEntries</td><td>Done (need sdkVersion 166)</td></tr>
+            <tr><td>KRON quote + unsigned Safe JSON</td><td>Done</td></tr>
+            <tr><td>signPskt popup → user approved → signed string returned</td><td>Done</td></tr>
+            <tr><td>Broadcast</td><td>Node rejected: <code>false stack entry at end of script execution</code></td></tr>
+          </tbody>
+        </table>
+        <div class="ok">Do not go back to Connect/session investigation unless a new error is “Connect KCC20 Wallet first” after a successful Connect (that means stale SDK).</div>
+      </section>
+
+      <section class="doc-sec" id="do-not" data-keywords="do not change quote covenant fees UI rebroadcast">
+        <h2>Do not</h2>
+        <ul>
+          <li>Rebroadcast the failed signed blob.</li>
+          <li>Change KRON quote logic, covenant construction, output amounts, fees, approval UI, or broadcast behavior.</li>
+          <li>Sign covenant / curve / inventory inputs.</li>
+          <li>Add alternate signing fallbacks.</li>
+          <li>Load sdk.js on page mount. Load only when the user selects SCORPION and taps Connect.</li>
+          <li>Overwrite a real KasWare extension.</li>
+          <li>Treat Connect as a payment.</li>
+        </ul>
+      </section>
+
+      <section class="doc-sec" id="install-nilla" data-keywords="install sdkVersion 166 BUILD 167 script">
+        <h2>Install</h2>
+        <p class="sig">script src="https://kcc-20-wallet.vercel.app/sdk.js?v=166"</p>
+        <p>Required: <code>window.kcc20.sdkVersion === "166"</code> and origin <code>https://kcc-20-wallet.vercel.app</code>.</p>
+        <p>User PWA must show <b>BUILD 167</b> (hard-refresh). 167 skips P2SH / already-signed covenant inputs even if you list them. Still pass only P2PK global indexes.</p>
+<pre>delete window.kcc20; delete window.kcc20wallet;
+// inject sdk.js?v=166, wait for kcc20#initialized</pre>
+      </section>
+
+      <section class="doc-sec" id="session-nilla" data-keywords="session popup close silent getPublicKey getUtxoEntries">
+        <h2>After Connect (popup closes — required)</h2>
+        <p>Connect opens the PWA. User Approves. Window <b>closes</b>. Then, with the popup still closed:</p>
+<pre>const accounts = await kcc.getAccounts();
+const network  = await kcc.getNetwork();      // kaspa_mainnet | kaspa_testnet_10
+const pubKey   = await kcc.getPublicKey();
+const utxos    = await kcc.getUtxoEntries(accounts[0]);</pre>
+        <p>If any throw <code>Connect KCC20 Wallet first</code> → stale SDK. Stop. Do not Connect-loop.</p>
+      </section>
+
+      <section class="doc-sec" id="prepare-nilla" data-keywords="Prepare KRON unsigned Safe JSON utxo">
+        <h2>Prepare</h2>
+        <p>You build unsigned rusty-kaspa <b>Safe JSON</b> from pubkey + UTXOs + KRON quote. KCC20 does not pick the route.</p>
+        <p>The wallet-owned P2PK funding input <b>must</b> include <code>utxo: { amount, scriptPublicKey, address }</code>. Missing utxo → wrong sighash → false stack even on the right index.</p>
+      </section>
+
+      <section class="doc-sec" id="sign-nilla" data-keywords="signPskt signInputs global index sighashType 1 P2PK">
+        <h2>signPskt — index is GLOBAL</h2>
+        <p class="sig">await kcc.signPskt({ txJsonString, options: { signInputs: [{ index: G, sighashType: 1 }] } }) → string</p>
+        <p><code>index</code> = <code>tx.inputs[i]</code> slot, 0-based. <b>Not</b> “0 = first wallet input.” <b>Not</b> KasWare-demo “sign 0 and 1.”</p>
+        <p>Typical KRON buy: <code>0</code> curve, <code>1</code> inventory, last = P2PK funding. So <code>G</code> is usually <code>n-1</code>, not <code>0</code>. Confirm from <b>your</b> unsigned tx.</p>
+        <p>Return is a <b>string</b>. Broadcast that string. Do not parse + stringify (mutates scripts).</p>
+        <p>Reject → <code>User rejected</code>. Stop. No retry loop.</p>
+      </section>
+
+      <section class="doc-sec" id="broadcast-nilla" data-keywords="pushTx broadcast txId">
+        <h2>Broadcast</h2>
+        <p class="sig">await kcc.pushTx(signedString) → { txId, node }</p>
+        <p>Or your own node. Do not double-broadcast. Do not push the failed blob again.</p>
+      </section>
+
+      <section class="doc-sec" id="false-stack" data-keywords="false stack entry script execution covenant">
+        <h2>false stack entry at end of script execution</h2>
+        <p>CHECKSIG pushed 0. Most likely: <code>signInputs</code> listed global <code>0</code> (curve) or <code>0,1</code> (curve + inventory). SCORPION v166 then wrote a P2PK signature over the covenant redeem. Node verified false.</p>
+        <p>Smallest fix: next Sign, list <b>only</b> connected-address P2PK funding indexes, <code>sighashType: 1</code>. Hard-refresh PWA to BUILD 167. Do not rebroadcast the old signed JSON.</p>
+      </section>
+
+      <section class="doc-sec" id="checklist" data-keywords="checklist compare unsigned signed indexes">
+        <h2>10-point check (no tx bodies, no secrets)</h2>
+        <ol>
+          <li>Total input count unsigned vs signed (must match).</li>
+          <li>Each global index role: curve / inventory / P2PK funding (from SPK prefix, not printed scripts).</li>
+          <li>Exact <code>signInputs</code> indexes you passed.</li>
+          <li>Every entry <code>sighashType: 1</code>.</li>
+          <li>Per input: did signatureScript change? byte length before/after. Never print hex.</li>
+          <li>Covenant scripts unchanged. If they changed, you listed those indexes — that is the failure.</li>
+          <li>P2PK funding: empty before, ≥65 bytes after.</li>
+          <li>Broadcast string is the exact SCORPION return (same length).</li>
+          <li>Treat index as global. <code>[0]</code> from KasWare demos is wrong for KRON.</li>
+          <li>Next Sign: <code>signInputs: G.map(i =&gt; ({ index: i, sighashType: 1 }))</code> where G is only P2PK funding slots.</li>
+        </ol>
+      </section>
+
+      <section class="doc-sec" id="prompt" data-keywords="Replit prompt copy paste agent">
+        <h2>Copy this into the Replit agent</h2>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" id="copy-prompt">Copy prompt</button>
+        </div>
+        <pre class="copy-box" id="replit-prompt">You are Nilla Gorilla. Do NOT return to Connect/session work. That path already succeeded.
+
+Live result stands:
+- SCORPION connected
+- getAccounts / getNetwork / getPublicKey / getUtxoEntries succeeded
+- you built the KRON unsigned tx
+- user approved Sign
+- SCORPION returned signed JSON
+- you stored it
+- user tapped Broadcast
+- Kaspa rejected: "failed to verify the signature script: false stack entry at end of script execution"
+- no auto-retry (correct)
+
+Do NOT rebroadcast the failed signed tx.
+Do NOT change KRON quote logic, covenant construction, output amounts, fees, approval UI, or broadcast behavior.
+Do NOT sign covenant / curve / inventory inputs.
+Do NOT add alternate signing fallbacks.
+
+SCORPION (source of truth, not KasWare demo)
+Wallet: https://kcc-20-wallet.vercel.app   BUILD 167 (hard-refresh)
+SDK:    https://kcc-20-wallet.vercel.app/sdk.js?v=166
+Nilla tab: this page (nilla.html)
+Docs:   https://github.com/mrzeku2000XTTT/kcc20-sdk
+
+signPskt:
+  await window.kcc20.signPskt({
+    txJsonString: unsignedSafeJson,
+    options: { signInputs: [{ index: GLOBAL_INPUT_INDEX, sighashType: 1 }] }
+  })
+Returns a STRING. Broadcast that string only. Do not re-serialize.
+
+index = GLOBAL tx.inputs[i], NOT “0 = first wallet-owned P2PK”.
+Typical KRON buy: 0 = curve, 1 = inventory, last = P2PK. Confirm from YOUR unsigned tx.
+sighashType must be 1.
+
+v166 P2PK-signed every listed index (including curve) — that is the false-stack error.
+v167 skips already-signed / P2SH. Still pass ONLY P2PK global indexes.
+
+Unsigned P2PK funding input MUST include utxo { amount, scriptPublicKey, address }.
+
+JOB: compare the FAILED unsigned vs signed (no bodies/secrets) using the 10-point check on the Nilla Gorilla tab. Then Sign again with only those G indexes. Do not rebroadcast the old blob.
+</pre>
+      </section>
+    </main>
+  </div>
+  <script src="js/docs.js"></script>
+  <script>
+    document.getElementById('copy-prompt')?.addEventListener('click', function () {
+      var t = document.getElementById('replit-prompt')?.innerText || '';
+      navigator.clipboard.writeText(t).then(function () {
+        document.getElementById('copy-prompt').textContent = 'Copied';
+      }).catch(function () {});
+    });
+  </script>
+</body>
+</html>

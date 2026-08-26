@@ -136,7 +136,7 @@ This repo is a static site. In Vercel: **Add New → Project → import `mrzeku2
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mrzeku2000XTTT/kcc20-sdk)
 
-Routes: `/` docs · `/demo` live Connect demo · `/sdk.js` the client.
+Routes: `/` docs · `/nilla` Nilla Gorilla · `/demo` live Connect demo · `/sdk.js` the client.
 
 ## License
 

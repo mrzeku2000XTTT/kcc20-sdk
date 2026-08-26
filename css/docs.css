@@ -21,18 +21,30 @@ a { color: var(--gold); text-decoration: none; }
 a:hover { text-decoration: underline; }
 .top {
   position: sticky; top: 0; z-index: 20;
-  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  padding: 12px 20px;
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(220px, 520px) minmax(140px, 1fr);
+  align-items: center;
+  gap: 12px 16px;
+  padding: 10px 20px 8px;
   border-bottom: 1px solid var(--line);
   background: rgba(8, 8, 9, 0.92);
   backdrop-filter: blur(12px);
 }
-.top img { width: 32px; height: 32px; border-radius: 9px; }
+.top .brand-wrap { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.top img { width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0; }
 .brand { font-weight: 750; letter-spacing: -0.3px; }
 .brand small { display: block; font-weight: 500; color: var(--muted); font-size: 12px; }
-.top nav { margin-left: auto; display: flex; gap: 14px; font-size: 13px; font-weight: 600; }
+.top nav {
+  justify-self: end;
+  display: flex; flex-wrap: wrap; justify-content: flex-end;
+  gap: 12px; font-size: 13px; font-weight: 600;
+}
+.top nav a.on { color: var(--gold2); }
 .search-wrap {
-  flex: 1; min-width: 220px; max-width: 520px; position: relative;
+  justify-self: center;
+  width: 100%;
+  max-width: 520px;
+  position: relative;
 }
 .search-wrap input {
   width: 100%; height: 40px; border-radius: 12px; border: 1px solid var(--line);
@@ -113,7 +125,21 @@ th { color: #aaa; font-weight: 600; font-size: 12px; text-transform: uppercase; 
 .btn.gold { background: linear-gradient(180deg, #f3e2bf, #c9a36a); color: #1a140c; }
 .btn.ghost { background: #1c1c1e; color: #f5f5f7; border: 1px solid var(--line); }
 .btn:hover { text-decoration: none; filter: brightness(1.06); }
+.copy-box {
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 420px; overflow: auto;
+  user-select: text;
+}
 @media (max-width: 840px) {
+  .top {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "brand nav"
+      "search search";
+  }
+  .top .brand-wrap { grid-area: brand; }
+  .top nav { grid-area: nav; }
+  .search-wrap { grid-area: search; max-width: 100%; }
   .wrap { grid-template-columns: 1fr; }
   aside { display: none; }
   main { padding: 20px 16px 64px; }

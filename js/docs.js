@@ -35,15 +35,21 @@
     ['phishing', 'security'],
     ['iframe', 'embed'],
     ['mobile', 'embed'],
-    ['Nilla', 'recipes'],
+    ['Nilla Gorilla', 'nilla'],
+    ['Nilla', 'nilla'],
     ['TTT', 'recipes'],
-    ['KRON', 'recipes']
+    ['KRON', 'nilla'],
+    ['false stack', 'nilla']
   ];
 
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
   function go(id, query) {
+    if (id === 'nilla' && !document.getElementById('nilla')) {
+      location.href = 'nilla.html';
+      return;
+    }
     var el = document.getElementById(id);
     if (!el) return;
     $all('.doc-sec').forEach(function (s) { s.classList.remove('hidden', 'flash'); });
