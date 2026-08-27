@@ -396,6 +396,7 @@ window.dispatchEvent(new Event('kaspa:requestProvider'));</pre>
         <h2>KasWare</h2>
         <p>On TTT / inside the PWA iframe, <code>window.kasware</code> may be a KCC20 shim (<code>isKcc20Shim</code>) so Connect does not open the Chrome extension.</p>
         <p>On your own dApp (Nilla, etc.): if a <b>real</b> extension exists, do <b>not</b> overwrite it. SCORPION path = <code>window.kcc20</code> only. KasWare path = <code>window.kasware</code>. <code>sendKaspa</code> on the shim is rejected — use <code>sendToken</code> / <code>signPskt</code>.</p>
+        <p><code>buyKron</code> on a KasWare chip is supported (BUILD 170+). The PWA builds the KRON swap and pops KasWare for the <b>P2PK funding input only</b> — not the curve/pool. Desktop Chrome/Edge. If the extension is missing (phone), switch to a native PIN chip. Do <b>not</b> treat “KasWare chip” as incompatible for buys. Do <b>not</b> build the covenant PSKT in React and send it to <code>window.kasware.signPskt</code>.</p>
       </section>
 
       <section class="doc-sec" id="embed" data-keywords="iframe TTT Profile mobile web+kcc20 popup tab">
