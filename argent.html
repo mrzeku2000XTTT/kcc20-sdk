@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Argent — vault compiler SDK + LLM director</title>
+  <meta name="description" content="Fact-checked Argent vault compiler SDK. LLM directs Argent. Argent compiles P2SH in the KCC20 PWA. Keys never leave the wallet.">
+  <link rel="icon" href="assets/icon.png">
+  <link rel="stylesheet" href="css/docs.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand-wrap">
+      <img src="assets/icon.png" alt="">
+      <div class="brand">KCC20 SDK<small>Argent compiler</small></div>
+    </div>
+    <div class="search-wrap">
+      <input id="q" type="search" placeholder="Search Argent: sentinel, grandson, compileVault, XMSS…" autocomplete="off">
+      <div class="search-meta" id="search-meta"></div>
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="tokens.html">Tokens</a>
+      <a href="prompt.html">Prompts</a>
+      <a href="docs.html">Docs</a>
+      <a href="nilla.html">Nilla Gorilla</a>
+      <a href="argent.html" class="on">Argent</a>
+      <a href="taptotip.html">Tap2Tip</a>
+      <a href="demo.html">Try it</a>
+      <a href="https://github.com/mrzeku2000XTTT/kcc20-sdk">GitHub</a>
+      <a href="https://kcc-20-wallet.vercel.app">Wallet</a>
+    </nav>
+  </header>
+  <div class="keywords" id="keywords"></div>
+  <div class="wrap">
+    <aside>
+      <div class="g">Argent</div>
+      <a href="#fact">How Argent really works</a>
+      <a href="#stack">LLM directs Argent</a>
+      <a href="#grandson">Grandson example</a>
+      <a href="#types">Intent types</a>
+      <a href="#install">Install</a>
+      <a href="#compile">compileVault / sendKas</a>
+      <a href="#own">Your own compiler</a>
+      <a href="#repo">Repo map</a>
+      <a href="#prompt">Copy LLM prompt</a>
+      <a href="#try">Try parse</a>
+    </aside>
+    <main>
+      <section class="doc-sec" id="fact" data-keywords="Argent fact check compile P2SH intent.js buildCovenant">
+        <p class="pill">sdkVersion 168 · argent.js 1.0.0</p>
+        <h1>Argent vault compiler</h1>
+        <p>Argent is the vault agent inside <a href="https://kcc-20-wallet.vercel.app">KCC20 Wallet</a>. It is <b>not</b> a hosted XMSS compiler and it does <b>not</b> hold keys.</p>
+        <table>
+          <thead><tr><th>Layer</th><th>What it actually does</th></tr></thead>
+          <tbody>
+            <tr><td>Local parser</td><td><code>wallet/js/intent.js</code> — same rules as <code>argent.js</code> here</td></tr>
+            <tr><td>Optional remote</td><td><code>/kccApi</code> <code>{ action:'chat', agent:'argent' }</code> merged into local parse</td></tr>
+            <tr><td>Compiler</td><td><code>buildCovenant</code> in the PWA → <code>kaspa:p</code> P2SH via rusty-kaspa WASM</td></tr>
+            <tr><td>This SDK</td><td>Parse + LLM director prompt + <code>compileVault</code> RPC. No keys, no opcodes.</td></tr>
+            <tr><td>Nilla-style LLM</td><td>Directs Argent. Does not compile. User PIN-signs.</td></tr>
+          </tbody>
+        </table>
+        <div class="ok">Time Capsule returns to the <b>owner</b>. “Send to my grandson” is a plain <code>send</code> unless they say dead-man / heir.</div>
+      </section>
+
+      <section class="doc-sec" id="stack" data-keywords="LLM Nilla director compileVault sendKas">
+        <h2>LLM directs Argent. Argent compiles.</h2>
+<pre>User: “I want to send Kaspa to my grandson.”
+  → your LLM (or argent.direct locally)
+  → ArgentIntent JSON
+  → kcc.compileVault({ type, params })   // vaults, kaspa:p
+     or kcc.sendKas({ dest, amount })    // plain send, kaspa:q
+  → PWA Argent compiles / builds
+  → user Approves + PIN
+  → { address, txId }</pre>
+        <p>Same money model as Nilla Gorilla: you (or Argent) build, they sign. Difference: for vaults you do <b>not</b> assemble the redeem script. Argent does.</p>
+      </section>
+
+      <section class="doc-sec" id="grandson" data-keywords="grandson heir sentinel send Time Capsule">
+        <h2>Grandson example (fact-checked)</h2>
+        <p>Local parser: <code>send</code> + no <code>kaspa:</code> address → type <code>send</code>, missing amount + destination. It will <b>not</b> invent a dead-man vault.</p>
+        <table>
+          <thead><tr><th>They mean</th><th>Type</th><th>Wallet call</th></tr></thead>
+          <tbody>
+            <tr><td>Pay him now</td><td><code>send</code></td><td><code>sendKas({ dest, amount })</code></td></tr>
+            <tr><td>If I miss check-ins / when I die</td><td><code>sentinel</code></td><td><code>compileVault</code> — timeout pays <code>beneficiary</code></td></tr>
+            <tr><td>Lock until a date, then I send</td><td><code>timelock</code> / <code>life</code></td><td>Unlocks to <b>you</b>, then <code>sendKas</code></td></tr>
+            <tr><td>He claims with a secret</td><td><code>hashlock</code></td><td><code>receiver</code> = his <code>kaspa:q</code></td></tr>
+            <tr><td>Post-quantum lock</td><td><code>xmss</code></td><td>Public kit from <code>xmss_keygen.py</code> only</td></tr>
+          </tbody>
+        </table>
+        <p>In-app sentinel is Schnorr + CLTV hops shaped like <code>covenants/sentinel</code>. Full XMSS sentinel is the repo CLI. Do not tell the user a Time Capsule pays the grandchild.</p>
+      </section>
+
+      <section class="doc-sec" id="types" data-keywords="timelock life escrow multisig kcc20lock sentinel recurring hashlock xmss send">
+        <h2>Intent types Argent can compile</h2>
+        <ul>
+          <li><code>send</code> — not a vault. Native KAS to <code>kaspa:q</code>.</li>
+          <li><code>timelock</code> — Time Capsule. Returns to owner.</li>
+          <li><code>life</code> — rent / car / save / spend / control. Unlock-anytime = owner envelope.</li>
+          <li><code>escrow</code> — seller refunds; buyer claims if that chip is in this PWA.</li>
+          <li><code>multisig</code> — 2-of-2, both keys on this device to Sweep.</li>
+          <li><code>kcc20lock</code> — freeze a KCC20 bag.</li>
+          <li><code>sentinel</code> — dead-man. <code>beneficiary</code> gets timeout.</li>
+          <li><code>recurring</code> — check-in pays <code>payee</code>.</li>
+          <li><code>hashlock</code> — secret or refund.</li>
+          <li><code>xmss</code> — real post-quantum vault from this GitHub repo. Public kit only.</li>
+        </ul>
+      </section>
+
+      <section class="doc-sec" id="install" data-keywords="argent.js sdk.js compileVault">
+        <h2>Install</h2>
+        <p class="sig">script src="https://kcc-20-wallet.vercel.app/sdk.js?v=168"</p>
+        <p class="sig">script src="https://kcc20-sdk.vercel.app/argent.js"</p>
+<pre>const argent = window.kcc20Argent;
+const directed = argent.direct(userText);
+if (!directed.complete) ask(directed.ask);
+else {
+  await kcc.connect(); // click
+  const r = directed.plan.method === 'sendKas'
+    ? await kcc.sendKas(directed.plan.payload)
+    : await kcc.compileVault(directed.plan.payload);
+}</pre>
+        <p>Parse is local. Compile opens the PWA. Require <code>kcc.sdkVersion &gt;= "168"</code>.</p>
+      </section>
+
+      <section class="doc-sec" id="compile" data-keywords="compileVault lockVault sendKas">
+        <h2>compileVault / sendKas</h2>
+        <p class="sig">await kcc.compileVault({ type, params, message? }) → { address, txId, type, name }</p>
+        <p>Wallet Argent compiles the P2SH, user Approves, PIN funds it. Result address starts with <code>kaspa:p</code>.</p>
+        <p class="sig">await kcc.sendKas({ dest, amount }) → { txId, dest, amountKas }</p>
+        <p>Plain transfer. <code>dest</code> is a full <code>kaspa:q</code>, not <code>kaspa:p</code>.</p>
+        <p>Pass <code>message</code> instead of a typed intent and the wallet parser fills the fields (same as the Argent orb). Incomplete intents throw with the same <code>askFor</code> string the orb uses.</p>
+        <p>Deep-link (no RPC): <code>https://kcc-20-wallet.vercel.app/?tab=vault&amp;argent=lock%2010%20kas%20for%207%20days</code></p>
+      </section>
+
+      <section class="doc-sec" id="own" data-keywords="create your own argent compiler vibe">
+        <h2>Create your own Argent</h2>
+        <ol>
+          <li>Load <code>argent.js</code>. Reuse <code>parseIntent</code> / <code>direct</code> / <code>askFor</code>.</li>
+          <li>Optional: sit any LLM in front with <code>argent.llmDirectorPrompt()</code>.</li>
+          <li>On a user click, call <code>compileVault</code> or <code>sendKas</code>. Do not compile scripts on your server. Do not ask for keys.</li>
+          <li>XMSS offline: <code>python3 keygen/xmss_keygen.py</code> then fund via the PWA or <code>covenants/xmsslock</code> CLI.</li>
+        </ol>
+        <p>Full notes: <a href="ARGENT.md">ARGENT.md</a> · repo <a href="https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants">kaspa-xmss-covenants</a>.</p>
+      </section>
+
+      <section class="doc-sec" id="repo" data-keywords="xmsslock sentinel time_capsule keygen schnorr">
+        <h2>Repo map</h2>
+        <table>
+          <thead><tr><th>Type</th><th>PWA function</th><th>GitHub</th></tr></thead>
+          <tbody>
+            <tr><td>timelock / life</td><td><code>buildTimelockCovenant</code></td><td>analog of <code>covenants/time_capsule</code></td></tr>
+            <tr><td>sentinel</td><td><code>buildSentinelChain</code> (Schnorr analog)</td><td>shape of <code>covenants/sentinel</code></td></tr>
+            <tr><td>recurring</td><td><code>buildRecurringChain</code></td><td><code>x402-kaspa/sentinel-x402</code></td></tr>
+            <tr><td>xmss</td><td>fund public kit P2SH</td><td><code>covenants/xmsslock</code> + <code>keygen/</code></td></tr>
+          </tbody>
+        </table>
+        <p>Node CLI uses <code>@onekeyfe/kaspa-wasm</code> (Node only). Browser uses rusty-kaspa web WASM. Do not mix.</p>
+      </section>
+
+      <section class="doc-sec" id="prompt" data-keywords="LLM system prompt copy">
+        <h2>Copy this into your LLM / Replit / Nilla</h2>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" id="copy-prompt">Copy director prompt</button>
+        </div>
+        <pre class="copy-box" id="replit-prompt">Loading…</pre>
+      </section>
+
+      <section class="doc-sec" id="try" data-keywords="try parse grandson demo">
+        <h2>Try parse (local, no keys)</h2>
+        <p><a class="btn gold" href="examples/argent-demo.html">Open argent-demo</a></p>
+        <p>Or in this page’s console: <code>kcc20Argent.direct('I want to send Kaspa to my grandson.')</code></p>
+      </section>
+    </main>
+  </div>
+  <script src="argent.js"></script>
+  <script src="js/docs.js"></script>
+  <script>
+    (function () {
+      var pre = document.getElementById('replit-prompt');
+      var A = window.kcc20Argent;
+      if (pre && A) pre.textContent = A.llmDirectorPrompt();
+      document.getElementById('copy-prompt')?.addEventListener('click', function () {
+        var t = (A && A.llmDirectorPrompt()) || pre?.innerText || '';
+        navigator.clipboard.writeText(t).then(function () {
+          document.getElementById('copy-prompt').textContent = 'Copied';
+        }).catch(function () {});
+      });
+    })();
+  </script>
+</body>
+</html>

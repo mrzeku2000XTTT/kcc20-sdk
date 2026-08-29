@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Argent director demo</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; font: 15px/1.45 -apple-system, BlinkMacSystemFont, sans-serif; background: #0b0b0c; color: #f5f5f7; padding: 28px 18px 48px; }
+    main { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 22px; letter-spacing: -0.4px; margin: 0 0 8px; }
+    p, li { color: rgba(235,235,245,.78); }
+    code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: #1c1c1e; padding: 2px 6px; border-radius: 6px; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    button { height: 44px; padding: 0 14px; border: 0; border-radius: 12px; font-weight: 650; cursor: pointer; background: linear-gradient(180deg,#f3e2bf,#c9a36a); color: #1a140c; }
+    button.ghost { background: #1c1c1e; color: #f5f5f7; border: 1px solid rgba(255,255,255,.12); }
+    textarea, input { width: 100%; background: #141416; color: inherit; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; padding: 10px; font: 14px/1.4 inherit; }
+    textarea { min-height: 72px; }
+    pre { white-space: pre-wrap; word-break: break-word; background: #141416; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 14px; min-height: 80px; font-size: 12px; }
+    .ok { color: #30d158; } .warn { color: #ffd60a; }
+  </style>
+  <script src="../argent.js"></script>
+  <script src="../sdk.js"></script>
+</head>
+<body>
+  <main>
+    <h1>Argent director</h1>
+    <p>Local parse (no keys). LLM optional. Argent in the PWA compiles. Try the grandson line.</p>
+    <textarea id="msg">I want to send Kaspa to my grandson.</textarea>
+    <div class="row">
+      <button type="button" id="parse">Parse locally</button>
+      <button class="ghost" type="button" id="connect">Connect SCORPION</button>
+      <button class="ghost" type="button" id="go">Compile / send in wallet</button>
+      <button class="ghost" type="button" id="prompt">Copy LLM prompt</button>
+    </div>
+    <p id="ask"></p>
+    <pre id="out">direct() output…</pre>
+  </main>
+  <script>
+    var A = window.kcc20Argent;
+    var last = null;
+    function show() {
+      var text = document.getElementById('msg').value;
+      last = A.direct(text);
+      document.getElementById('ask').textContent = last.ask || last.summary || last.text || '';
+      document.getElementById('out').textContent = JSON.stringify({
+        kind: last.kind,
+        complete: last.complete,
+        summary: last.summary,
+        ask: last.ask,
+        hints: last.hints,
+        intent: last.intent,
+        plan: last.plan && { method: last.plan.method, returnsTo: last.plan.returnsTo, walletFn: last.plan.walletFn, repo: last.plan.repo },
+        walletCall: last.walletCall
+      }, null, 2);
+    }
+    document.getElementById('parse').onclick = show;
+    document.getElementById('prompt').onclick = function () {
+      navigator.clipboard.writeText(A.llmDirectorPrompt()).then(function () {
+        document.getElementById('prompt').textContent = 'Copied';
+      });
+    };
+    document.getElementById('connect').onclick = async function () {
+      try {
+        var acc = await window.kcc20.connect();
+        document.getElementById('out').textContent = 'Connected ' + acc[0];
+      } catch (e) {
+        document.getElementById('out').textContent = e.message || String(e);
+      }
+    };
+    document.getElementById('go').onclick = async function () {
+      show();
+      if (!last || last.kind === 'talk' || !last.complete) {
+        document.getElementById('ask').textContent = last.ask || last.text || 'Need more fields';
+        return;
+      }
+      try {
+        if (!window.kcc20.getAccounts || !(await window.kcc20.getAccounts()).length) {
+          await window.kcc20.connect();
+        }
+        var r;
+        if (last.plan.method === 'sendKas') r = await window.kcc20.sendKas(last.plan.payload);
+        else r = await window.kcc20.compileVault(last.plan.payload);
+        document.getElementById('out').textContent = JSON.stringify(r, null, 2);
+      } catch (e) {
+        document.getElementById('out').textContent = e.message || String(e);
+      }
+    };
+    show();
+  </script>
+</body>
+</html>

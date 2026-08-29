@@ -3,7 +3,8 @@
 **SDK repo (plug-and-play):** https://github.com/mrzeku2000XTTT/kcc20-sdk  
 **Docs site:** https://kcc-20-wallet.vercel.app/docs.html  
 Live wallet: https://kcc-20-wallet.vercel.app  
-SDK: https://kcc-20-wallet.vercel.app/sdk.js?v=167  
+SDK: https://kcc-20-wallet.vercel.app/sdk.js?v=168
+Argent: https://kcc20-sdk.vercel.app/argent.js · https://kcc20-sdk.vercel.app/argent.html  
 Demo: https://kcc-20-wallet.vercel.app/dapp-demo.html  
 Wallet app: https://github.com/mrzeku2000XTTT/KCC20-wallet
 
@@ -25,11 +26,11 @@ KIP-12 itself is still a **draft** ([kaspanet/kips#21](https://github.com/kaspan
 ## Install in a dApp
 
 ```html
-<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=167"></script>
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=168"></script>
 ```
 
 ```js
-const kcc = window.kcc20; // require kcc.sdkVersion === "167"
+const kcc = window.kcc20; // require kcc.sdkVersion === "168"
 const accounts = await kcc.connect();          // popup: user Approves, then the window closes
 const address = accounts[0];
 const network = await kcc.getNetwork();        // silent — popup stays closed
@@ -85,6 +86,8 @@ Load `sdk.js` **before** you dispatch `kaspa:requestProvider`.
 | `buyKron({ tick, amount })` | Buy any KRON KCC20. `amount` = KAS. Wallet builds TRADE. Live ticks: [tokens.html](https://kcc20-sdk.vercel.app/tokens.html) |
 | `quoteKron` / `sellKron` | Preview / sell (sell amount = tokens) |
 | `sendToken({ tick, amount, dest })` | KCC20 send (used by TTT Fund). Not a buy. |
+| `compileVault({ type, params })` | Argent compiles a P2SH `kaspa:p`. User PIN-funds. See [argent.html](https://kcc20-sdk.vercel.app/argent.html). |
+| `sendKas({ dest, amount })` | Plain KAS to `kaspa:q`. “Send to grandson” is this unless they want a dead-man. |
 | `disconnect()` | drop origin |
 
 ## Buy on any vibe platform

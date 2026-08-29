@@ -1,5 +1,5 @@
 (function (root) {
-  var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=167';
+  var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=168';
   var WALLET = 'https://kcc-20-wallet.vercel.app';
   var DOCS = 'https://github.com/mrzeku2000XTTT/kcc20-sdk';
 
@@ -26,11 +26,11 @@
       'Use KCC20 Wallet (SCORPION). Not a Chrome extension. Keys NEVER leave the wallet. NEVER ask for seed, PIN, or 64-hex.',
       'Load once, on a user click path (Connect button), not on every page load:',
       '  <script src="' + SDK + '"></script>',
-      '  const kcc = window.kcc20;  // require kcc.sdkVersion >= "167"',
+      '  const kcc = window.kcc20;  // require kcc.sdkVersion >= "168"',
       'Connect ONLY on a button tap: const accounts = await kcc.connect();',
       'After Connect the popup CLOSES on purpose. Then silent reads work:',
       '  getAccounts, getNetwork, getPublicKey, getUtxoEntries, getBalance, getHoldings, getTokenBalance',
-      'If you see "Connect KCC20 Wallet first" after a successful Connect, the SDK is stale. Reload sdk.js?v=167.',
+      'If you see "Connect KCC20 Wallet first" after a successful Connect, the SDK is stale. Reload sdk.js?v=168.',
       'User must already have created/imported a wallet at ' + WALLET + ' and unlocked with PIN.',
       'Allow popups. No dApp PIN pad. Do not overwrite window.kasware if a real extension exists.',
       'Do not credit the user without a real txId. Connect is not payment.',
@@ -38,7 +38,7 @@
       'Tokens (live KRON list + per-tick prompts): https://kcc20-sdk.vercel.app/tokens.html',
       'AI sources: https://kcc20-sdk.vercel.app/llms.txt  and  https://kcc20-sdk.vercel.app/tokens.json',
       'Canonical tokenlist: https://api.kron.technology/api/registry/tokenlist?all=1  Indexer: https://idx.kron.technology/v1/kcc20',
-      'Nilla: nilla.html  Tap2Tip: taptotip.html'
+      'Nilla: nilla.html  Argent vault compiler: argent.html  Tap2Tip: taptotip.html'
     ].join('\n');
   }
 
@@ -58,28 +58,26 @@
   }
 
   function tmplVault(intent) {
-    return baseRules() + '\n\nUSER INTENT:\n' + intent + '\n\nBUILD: a Covenant++ vault app. User describes RULES in your UI. You do NOT hold keys. You do NOT run a signer server.\n\n' +
-      'Vault types this wallet already has (map intent → type):\n' +
-      '- timelock / Time Capsule — lock KAS until a time, then sweep\n' +
-      '- kcc20freeze — freeze KCC20 tokens until a time\n' +
-      '- escrow — seller can refund; buyer claims if that kaspa:q is in KCC20\n' +
-      '- multisig — two keys on the user’s phone must agree\n' +
-      '- life / rent / save — lock until a date, optional unlock-anytime\n' +
-      '- hashlock — pay now, preimage later\n' +
-      '- sentinel / recurring — check-in or drip (advanced)\n\n' +
-      'TODAY (Checkout-style — wallet builds, like buyKron):\n' +
-      'There is no lockVault RPC yet. Two honest paths:\n' +
-      '1) Deep-link the user to ' + WALLET + ' Vault tab with a prefilled message (amount + hours + type) and tell them to PIN-lock there. Your app stores the returned kaspa:p / txId they paste, or you poll getHoldings.\n' +
-      '2) Builder path: YOU build unsigned Safe JSON for the covenant using rusty-kaspa + the published script templates, then:\n' +
-      '    await kcc.signPskt({\n' +
-      '      txJsonString,\n' +
-      '      options: { signInputs: [{ index: FUNDING_P2PK_GLOBAL_INDEX, sighashType: 1 }] }\n' +
-      '    });\n' +
-      '    index is GLOBAL tx.inputs[] — never list P2SH/covenant/curve inputs (false stack on node).\n' +
-      '    const r = await kcc.pushTx(signed); const txId = r.txId || r;\n\n' +
-      'Your app UI: intent form (type, amount KAS or tick, hours, heir/buyer address). Generate a plain-language policy the user reads. Then Sign. Store only: userId, address, type, unlockAt, txId. NEVER keys.\n' +
-      'If the company server dies, the vault is still on Kaspa; user opens KCC20 and sweeps.\n' +
-      'Done when: user Connects, describes a rule (e.g. lock 50 KAS 7 days), Signs in SCORPION, you show txId + unlock time.';
+    return baseRules() + '\n\nUSER INTENT:\n' + intent + '\n\nBUILD: your own Argent vault director. An LLM (Nilla-style) turns English into an ArgentIntent. Argent in the KCC20 PWA COMPILES the P2SH. You do NOT hold keys. You do NOT compile opcodes on a server.\n\n' +
+      'Load BOTH scripts (Connect still only on a user click):\n' +
+      '  <script src="' + SDK + '"></script>\n' +
+      '  <script src="https://kcc20-sdk.vercel.app/argent.js"></script>\n' +
+      'FACT-CHECK (https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants wallet/):\n' +
+      '- Argent = local parseIntent + local buildCovenant. Optional /kccApi chat merge. Not a hosted XMSS compiler.\n' +
+      '- “Send Kaspa to my grandson” = type send (plain transfer). Need amount + his kaspa:q. Argent does not compile a vault.\n' +
+      '- Time Capsule / life RETURNS TO THE OWNER. It does not pay the grandson. Say this honestly.\n' +
+      '- Heir / dead-man / when I die = type sentinel, params.beneficiary = his kaspa:q. Timeout pays him. In-app sentinel is Schnorr+CLTV hops shaped like covenants/sentinel. Full XMSS is type xmss + public kit from keygen/xmss_keygen.py.\n' +
+      'Parse locally (no Connect): const directed = window.kcc20Argent.direct(userText);\n' +
+      'If !directed.complete, show directed.ask. Never invent a kaspa: address.\n' +
+      'On a user click: await kcc.connect();\n' +
+      '  if (directed.plan.method === "sendKas") await kcc.sendKas(directed.plan.payload);\n' +
+      '  else await kcc.compileVault({ type: directed.intent.type, params: directed.intent.params });\n' +
+      'compileVault returns { address: "kaspa:p…", txId, type }. sendKas returns { txId, dest, amountKas }.\n' +
+      'Optional LLM layer: system prompt = window.kcc20Argent.llmDirectorPrompt(). Director only — Argent compiles.\n' +
+      'Deep-link: ' + WALLET + '/?tab=vault&argent=' + encodeURIComponent('lock 10 kas for 7 days') + '\n' +
+      'Docs: https://kcc20-sdk.vercel.app/argent.html  ARGENT.md\n' +
+      'Store only: userId, kaspa:p, type, unlockAt, txId. NEVER keys.\n' +
+      'Done when: user says “send kas to my grandson”, you ask dest+amount+now vs dead-man, then Connect + sendKas or compileVault, txId shows.';
   }
 
   function tmplPay(intent) {

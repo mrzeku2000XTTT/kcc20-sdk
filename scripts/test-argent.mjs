@@ -1,0 +1,63 @@
+/* Node fact-check for argent.js — same rules as wallet Argent. */
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+import vm from 'vm';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const src = readFileSync(join(here, '..', 'argent.js'), 'utf8');
+const ctx = { module: { exports: {} }, exports: {} };
+ctx.globalThis = ctx;
+vm.runInNewContext(src, ctx);
+const A = ctx.kcc20Argent;
+if (!A) {
+  console.error('argent.js did not attach kcc20Argent');
+  process.exit(1);
+}
+
+function ok(name, cond) {
+  if (!cond) {
+    console.error('FAIL', name);
+    process.exitCode = 1;
+    return false;
+  }
+  console.log('ok', name);
+  return true;
+}
+
+const grandson = A.direct('I want to send Kaspa to his grandson.');
+ok('grandson is send, not a vault', grandson.intent && grandson.intent.type === 'send');
+ok('grandson incomplete without dest', grandson.complete === false);
+ok('grandson asks destination or amount', /amount|destination|kaspa|how much/i.test((grandson.ask || '') + ' ' + (grandson.intent.missing || []).join(' ')));
+ok('grandson hint mentions send-now or ask-lock', (grandson.hints || []).some(h => h.suggest === 'send' || h.code === 'send-now' || h.code === 'ask-lock'));
+
+const sendAddr = A.parseIntent('send 10 kas to kaspa:qrtfjhwty4jp0p5203luswhscl63t4lt0aptgz5dezwjkuk2kteyxu7q4sax6');
+ok('send+address is send', sendAddr.type === 'send' && sendAddr.complete);
+ok('send dest', sendAddr.params.destination === 'kaspa:qrtfjhwty4jp0p5203luswhscl63t4lt0aptgz5dezwjkuk2kteyxu7q4sax6');
+ok('send plan is sendKas', A.compilePlan(sendAddr).method === 'sendKas');
+
+const lock = A.parseIntent('lock 10 kas for 7 days');
+ok('lock is timelock', lock.type === 'timelock' && lock.complete);
+ok('lock minutes ~ 7d', Math.abs(lock.params.lockMinutes - 7 * 1440) < 2);
+ok('timelock returns to owner', /owner/i.test(A.compilePlan(lock).returnsTo));
+ok('timelock is compileVault', A.compilePlan(lock).method === 'compileVault');
+
+const heir = A.direct('dead-man 50 kas for 30 days heir kaspa:qrtfjhwty4jp0p5203luswhscl63t4lt0aptgz5dezwjkuk2kteyxu7q4sax6');
+ok('heir is sentinel', heir.intent && heir.intent.type === 'sentinel');
+ok('heir complete', heir.complete);
+ok('heir beneficiary set', heir.intent.params.beneficiary && heir.intent.params.beneficiary.startsWith('kaspa:q'));
+
+const later = A.directorHints('lock 10 kas until he turns 18 for my grandson', { type: 'timelock', params: { amountKas: 10 }, complete: true, missing: [] });
+ok('later-lock warns capsule is not heir', later.some(h => h.code === 'capsule-not-heir' || h.warn));
+
+const rent = A.parseIntent('lock 1000 kas for rent until September 1 2026 9:00 UTC');
+ok('rent is life', rent.type === 'life' && rent.params.lifeKind === 'rent');
+
+ok('prompt mentions grandson and Time Capsule owner', /grandson/i.test(A.llmDirectorPrompt()) && /OWNER/i.test(A.llmDirectorPrompt()));
+ok('schema has send+sentinel+xmss', A.intentSchema().properties.type.enum.indexOf('send') >= 0 && A.intentSchema().properties.type.enum.indexOf('xmss') >= 0);
+
+if (process.exitCode) {
+  console.error('argent tests failed');
+  process.exit(1);
+}
+console.log('argent tests passed');

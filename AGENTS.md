@@ -4,8 +4,8 @@ You are helping a human vibe-code a Kaspa dApp. Read `llms.txt` first, then `tok
 
 ## Non-negotiable
 
-1. Load `https://kcc-20-wallet.vercel.app/sdk.js?v=167` once, from a Connect **click**.
-2. `window.kcc20.sdkVersion` must be `"167"` or higher.
+1. Load `https://kcc-20-wallet.vercel.app/sdk.js?v=168` once, from a Connect **click**.
+2. `window.kcc20.sdkVersion` must be `"168"` or higher.
 3. Keys stay in the PWA at `https://kcc-20-wallet.vercel.app`. Never ask for seed, PIN, or hex keys.
 4. After Connect the popup **closes**. Silent reads must work without a second Connect.
 5. Buying a KCC20 / KRON token is `buyKron({ tick, amount })` where **amount is KAS**.
@@ -38,4 +38,15 @@ Implement the same surface so dApps do not fork: Connect on click, silent sessio
 - https://kcc20-sdk.vercel.app/tokens.html
 - https://kcc20-sdk.vercel.app/docs.html
 - https://kcc20-sdk.vercel.app/nilla.html
+- https://kcc20-sdk.vercel.app/argent.html
 - https://kcc20-sdk.vercel.app/taptotip.html
+
+## If they want a vault / Argent / “send KAS to my grandson”
+
+Read `ARGENT.md` and `argent.html`. Load `argent.js` too.
+
+- Local parse: `window.kcc20Argent.direct(text)` — no keys.
+- “Send to grandson” is type `send` (plain transfer). Ask for amount + his `kaspa:q`. Time Capsule returns to the **owner**, not him.
+- Dead-man / heir → `compileVault({ type:'sentinel', params:{ amountKas, lockMinutes, beneficiary } })`.
+- Pay now → `sendKas({ dest, amount })`.
+- LLM director prompt: `kcc20Argent.llmDirectorPrompt()`. The LLM directs; Argent in the PWA compiles.

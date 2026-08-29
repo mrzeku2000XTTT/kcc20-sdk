@@ -5,7 +5,8 @@ This file is for AI coding agents (Replit, Base44, Cursor, Claude, Grok, Copilot
 ## Identity
 
 - Product: KCC20 Wallet (SCORPION)
-- dApp client: `window.kcc20` from `https://kcc-20-wallet.vercel.app/sdk.js?v=167`
+- dApp client: `window.kcc20` from `https://kcc-20-wallet.vercel.app/sdk.js?v=168`
+- Argent parser: `https://kcc20-sdk.vercel.app/argent.js` (`window.kcc20Argent`)
 - Wallet UI / keys / PIN: `https://kcc-20-wallet.vercel.app` (PWA). Keys never leave this origin.
 - Docs site: `https://kcc20-sdk.vercel.app`
 - SDK repo: `https://github.com/mrzeku2000XTTT/kcc20-sdk`
@@ -36,7 +37,7 @@ If the user names a tick, look it up in tokens.json / tokenlist. If missing, sti
 ## Install
 
 ```html
-<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=167"></script>
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=168"></script>
 ```
 
 ```js
@@ -45,19 +46,19 @@ window.addEventListener('kcc20#initialized', (e) => {
 });
 ```
 
-Confirm `kcc.sdkVersion === "167"` or higher. Optional before load: `window.KCC20_WALLET_ORIGIN = 'https://kcc-20-wallet.vercel.app'`.
+Confirm `kcc.sdkVersion === "168"` or higher. Optional before load: `window.KCC20_WALLET_ORIGIN = 'https://kcc-20-wallet.vercel.app'`.
 
 Only call Connect from a user click. Never on page load. Never on every route. Browsers block popups without a gesture.
 
 ## Popup vs silent
 
 POPUP (opens PWA, then usually closes):
-`connect`, `requestAccounts`, `signPskt`, `pushTx`, `sendToken`, `buyKron`, `sellKron`, `tradeKron`, `switchNetwork`
+`connect`, `requestAccounts`, `signPskt`, `pushTx`, `sendToken`, `buyKron`, `sellKron`, `tradeKron`, `compileVault`, `sendKas`, `switchNetwork`
 
 SILENT (after Connect succeeded and popup closed):
 `getAccounts`, `getNetwork`, `getPublicKey`, `getUtxoEntries`, `getBalance`, `getHoldings`, `getTokenBalance`, `getState`, `detect`, `quoteKron` (best-effort)
 
-If silent calls throw `Connect KCC20 Wallet first` after a successful Connect, the SDK is stale. Reload `sdk.js?v=167`.
+If silent calls throw `Connect KCC20 Wallet first` after a successful Connect, the SDK is stale. Reload `sdk.js?v=168`.
 
 ## Buy KCC20 on YOUR platform
 
@@ -109,6 +110,30 @@ await kcc.sendToken({
 ```
 
 Aliases: `sendKcc20`, `payToken`, `payKcc20`, `fundCredits`.
+
+## Argent vaults (LLM directs, wallet compiles)
+
+Fact-checked against https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants `wallet/`. Argent is a **local** parser + **local** P2SH compile in the PWA. This SDK does not hold keys.
+
+```html
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=168"></script>
+<script src="https://kcc20-sdk.vercel.app/argent.js"></script>
+```
+
+```js
+const directed = window.kcc20Argent.direct('I want to send Kaspa to my grandson.');
+// type send, incomplete — ask directed.ask (amount + kaspa:q)
+// Time Capsule would NOT pay the grandson. Dead-man → type sentinel, beneficiary = his address.
+await kcc.connect();
+if (directed.plan.method === 'sendKas') await kcc.sendKas(directed.plan.payload);
+else await kcc.compileVault({ type: directed.intent.type, params: directed.intent.params });
+```
+
+- `send` = plain KAS. `sendKas({ dest, amount })`. dest is `kaspa:q`.
+- `timelock` / `life` return to the **owner**.
+- `sentinel` timeout pays `params.beneficiary`. In-app is Schnorr+CLTV hops (shape of `covenants/sentinel`). XMSS vault is `type: 'xmss'` + public kit from `keygen/xmss_keygen.py`.
+- LLM system prompt: `kcc20Argent.llmDirectorPrompt()`.
+- Docs: https://kcc20-sdk.vercel.app/argent.html
 
 ## Token gate
 

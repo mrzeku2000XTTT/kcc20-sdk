@@ -4,11 +4,12 @@
 
 Website: https://kcc20-sdk.vercel.app
 Wallet (keys live here): https://kcc-20-wallet.vercel.app
-SDK script: https://kcc-20-wallet.vercel.app/sdk.js?v=167
+SDK script: https://kcc-20-wallet.vercel.app/sdk.js?v=168
+Argent compiler: https://kcc20-sdk.vercel.app/argent.js
 GitHub: https://github.com/mrzeku2000XTTT/kcc20-sdk
 Wallet app: https://github.com/mrzeku2000XTTT/KCC20-wallet
 
-Require `window.kcc20.sdkVersion >= "167"` (`buyKron` exists). Only call Connect from a **user click**. After Approve the popup **closes on purpose**. Then silent reads work.
+Require `window.kcc20.sdkVersion >= "168"` (`buyKron` + `compileVault` + `sendKas`). Only call Connect from a **user click**. After Approve the popup **closes on purpose**. Then silent reads work.
 
 ## Read next
 
@@ -20,6 +21,7 @@ Require `window.kcc20.sdkVersion >= "167"` (`buyKron` exists). Only call Connect
 - [Human Tokens tab](https://kcc20-sdk.vercel.app/tokens.html)
 - [API docs](https://kcc20-sdk.vercel.app/docs.html)
 - [Nilla / signPskt](https://kcc20-sdk.vercel.app/nilla.html)
+- [Argent vault compiler](https://kcc20-sdk.vercel.app/argent.html)
 - [Tap2Tip / Base44 buyKron](https://kcc20-sdk.vercel.app/taptotip.html)
 - [Prompt studio](https://kcc20-sdk.vercel.app/prompt.html)
 
@@ -60,6 +62,8 @@ const bought = await kcc.buyKron({ tick: 'KKDAG', amount: '10' });
 | `sendToken({ tick, amount, dest })` | Send held bag to `kaspa:q…` |
 | `signPskt({ txJsonString, options })` | You built the tx. P2PK only. `signInputs.index` is **global** `tx.inputs[]` |
 | `pushTx(signed)` | Returns `{ txId, node }` — read `.txId` |
+| `compileVault({ type, params })` | Argent compiles a P2SH `kaspa:p`. User PIN-funds. Not a send. |
+| `sendKas({ dest, amount })` | Plain KAS to `kaspa:q`. “Send to grandson” is this, not a vault. |
 | `disconnect()` | Stay on the dApp tab |
 
 Never ask for seed, PIN, or 64-hex. Never overwrite a real `window.kasware`. KIP-12: `kaspa:provider` `rdns: app.kcc20.wallet`.

@@ -24,6 +24,7 @@
       <a href="prompt.html">Prompts</a>
       <a href="docs.html" class="on">Docs</a>
       <a href="nilla.html">Nilla Gorilla</a>
+      <a href="argent.html">Argent</a>
       <a href="taptotip.html">Tap2Tip</a>
       <a href="demo.html">Try it</a>
       <a href="https://github.com/mrzeku2000XTTT/kcc20-sdk">GitHub</a>
@@ -58,6 +59,7 @@
       <a href="#pushTx">pushTx</a>
       <a href="#buyKron">buyKron</a>
       <a href="#sendToken">sendToken</a>
+      <a href="argent.html">compileVault / Argent</a>
       <a href="tokens.html">Tokens (live KRON)</a>
       <a href="#request">request()</a>
       <div class="g">Guides</div>
@@ -74,7 +76,7 @@
     </aside>
     <main>
       <section class="doc-sec" id="can-do" data-keywords="overview capabilities what can people do scorpion kcc20">
-        <p class="pill">sdkVersion 167</p>
+        <p class="pill">sdkVersion 168</p>
         <h1>What people can do with the KCC20 SDK</h1>
         <p>This is the <b>dApp client</b>. It does not hold keys. It opens the hosted PWA at <code>https://kcc-20-wallet.vercel.app</code>, talks over <code>postMessage</code> <code>ns:'kcc20'</code>, and gives your app a KasWare-shaped API: <code>window.kcc20</code>.</p>
         <table>
@@ -86,6 +88,8 @@
             <tr><td>Build a transaction</td><td><code>getPublicKey()</code> + <code>getUtxoEntries()</code> (silent after Connect)</td></tr>
             <tr><td>Show KAS / KCC20 bags</td><td><code>getBalance()</code>, <code>getHoldings()</code>, <code>getTokenBalance('KKDAG')</code></td></tr>
             <tr><td>Let the user sign your PSKT</td><td><code>signPskt({ txJsonString, options })</code> — you build, they sign</td></tr>
+            <tr><td>Compile a vault (Argent)</td><td><code>compileVault({ type, params })</code> — PWA compiles P2SH, user funds. See <a href="argent.html">Argent</a></td></tr>
+            <tr><td>Send native KAS</td><td><code>sendKas({ dest, amount })</code> — plain transfer, not a vault</td></tr>
             <tr><td>Broadcast the signed tx</td><td><code>pushTx(signed)</code> or your own node</td></tr>
             <tr><td>Buy any KRON / KCC20 token with KAS</td><td><code>buyKron({ tick, amount })</code> — amount is KAS. Wallet builds Home TRADE. Live list: <a href="tokens.html">Tokens</a></td></tr>
             <tr><td>Send a KCC20 token (TTT Fund)</td><td><code>sendToken({ tick, amount, dest })</code> — bag they already hold, not a buy</td></tr>

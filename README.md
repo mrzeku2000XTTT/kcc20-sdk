@@ -4,14 +4,15 @@ Plug-and-play **dApp connect** for [KCC20 Wallet](https://kcc-20-wallet.vercel.a
 
 | | |
 |---|---|
-| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=167` |
+| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=168` |
 | **This repo** | client `sdk.js` + docs + Tokens + AI sources (not the wallet app) |
 | **Wallet app** | [kcc-20-wallet.vercel.app](https://kcc-20-wallet.vercel.app) · [KCC20-wallet](https://github.com/mrzeku2000XTTT/KCC20-wallet) |
 | **Docs frontend** | Import this repo on Vercel → `kcc20-sdk.vercel.app` (static root, no build) |
 | **Tokens** | [tokens.html](./tokens.html) · [tokens.json](./tokens.json) — every KCC20 on [kron.technology](https://kron.technology) |
 | **For AIs** | [llms.txt](./llms.txt) · [AGENTS.md](./AGENTS.md) · [ai.json](./ai.json) |
 | **Live demo** | [examples/dapp-demo.html](./examples/dapp-demo.html) |
-| **sdkVersion** | `167` |
+| **sdkVersion** | `168` |
+| **Argent** | [argent.html](./argent.html) · [ARGENT.md](./ARGENT.md) · `argent.js` — LLM directs, wallet compiles vaults |
 
 Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The user **Approves** in the KCC20 window.
 
@@ -20,7 +21,7 @@ Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The u
 ## Install
 
 ```html
-<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=167"></script>
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=168"></script>
 ```
 
 Or from this repo / jsDelivr (still opens the live PWA):
@@ -32,7 +33,7 @@ Or from this repo / jsDelivr (still opens the live PWA):
 Confirm:
 
 ```js
-window.kcc20.sdkVersion === '167'
+window.kcc20.sdkVersion === '168'
 window.kcc20.origin === 'https://kcc-20-wallet.vercel.app'
 ```
 
@@ -65,7 +66,7 @@ const signed = await kcc.signPskt({
 const { txId } = await kcc.pushTx(signed);   // optional
 ```
 
-If `getPublicKey` / `getUtxoEntries` throw `Connect KCC20 Wallet first` after a successful Connect, you are on a **stale SDK**. Load `sdk.js?v=167` and hard-reload.
+If `getPublicKey` / `getUtxoEntries` throw `Connect KCC20 Wallet first` after a successful Connect, you are on a **stale SDK**. Load `sdk.js?v=168` and hard-reload.
 
 ### Buy a KCC20 token on your app
 
@@ -86,7 +87,8 @@ Live ticks: [tokens.html](https://kcc20-sdk.vercel.app/tokens.html) · [tokens.j
 | `pushTx` | `getPublicKey` |
 | `sendToken` / `payKcc20` | `getUtxoEntries` |
 | `buyKron` / `sellKron` / `tradeKron` | `getBalance` / `getHoldings` / `getTokenBalance` |
-| `switchNetwork` | `quoteKron` (best-effort) |
+| `compileVault` / `sendKas` | `quoteKron` (best-effort) |
+| `switchNetwork` | |
 
 ---
 
@@ -104,6 +106,8 @@ Live ticks: [tokens.html](https://kcc20-sdk.vercel.app/tokens.html) · [tokens.j
 | `pushTx(signedJson)` | `{ txId, node }` |
 | `buyKron({ tick, amount })` | Buy KCC20. `amount` = KAS. Wallet builds TRADE |
 | `sendToken({ tick, amount, dest })` | Send a held bag (not a buy) |
+| `compileVault({ type, params })` | Argent compiles a P2SH vault (`kaspa:p`). User funds. |
+| `sendKas({ dest, amount })` | Plain KAS transfer. “Send to grandson” is this unless they want a dead-man. |
 | `disconnect()` | forget this origin |
 
 Events: `kcc.on('accountsChanged'|'networkChanged'|'disconnect', fn)`

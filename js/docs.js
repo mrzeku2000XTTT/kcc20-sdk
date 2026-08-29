@@ -43,6 +43,12 @@
     ['tokenlist', 'tokens'],
     ['Nilla Gorilla', 'nilla'],
     ['Nilla', 'nilla'],
+    ['Argent', 'argent'],
+    ['compileVault', 'argent'],
+    ['sendKas', 'argent'],
+    ['grandson', 'argent'],
+    ['sentinel', 'argent'],
+    ['vault', 'argent'],
     ['TTT', 'recipes'],
     ['KRON', 'nilla'],
     ['false stack', 'nilla']
@@ -54,6 +60,10 @@
   function go(id, query) {
     if (id === 'nilla' && !document.getElementById('nilla')) {
       location.href = 'nilla.html';
+      return;
+    }
+    if (id === 'argent' && !document.getElementById('fact')) {
+      location.href = 'argent.html';
       return;
     }
     if ((id === 'ttt' || id === 'buy') && !document.getElementById('ttt') && !document.getElementById('buy')) {

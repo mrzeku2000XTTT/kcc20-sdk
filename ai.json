@@ -4,8 +4,12 @@
   "description": "Plug-and-play Kaspa KCC20 dApp SDK. Connect a hosted PWA, buy every KRON-launched KCC20 token with buyKron, send bags, sign PSKTs. Keys never leave the wallet.",
   "website": "https://kcc20-sdk.vercel.app",
   "wallet": "https://kcc-20-wallet.vercel.app",
-  "sdk": "https://kcc-20-wallet.vercel.app/sdk.js?v=167",
-  "sdkVersion": "167",
+  "sdk": "https://kcc-20-wallet.vercel.app/sdk.js?v=168",
+  "sdkVersion": "168",
+  "argent": "https://kcc20-sdk.vercel.app/argent.js",
+  "argentPage": "https://kcc20-sdk.vercel.app/argent.html",
+  "argentMd": "https://kcc20-sdk.vercel.app/ARGENT.md",
+  "covenantsRepo": "https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants",
   "github": "https://github.com/mrzeku2000XTTT/kcc20-sdk",
   "walletGithub": "https://github.com/mrzeku2000XTTT/KCC20-wallet",
   "llms": "https://kcc20-sdk.vercel.app/llms.txt",
@@ -24,6 +28,12 @@
     "args": { "tick": "KKDAG", "amount": "10" },
     "amountMeans": "KAS to spend",
     "not": "sendToken is a bag transfer, not a buy"
+  },
+  "vault": {
+    "parse": "window.kcc20Argent.direct(text)",
+    "compile": "compileVault({ type, params })",
+    "send": "sendKas({ dest, amount })",
+    "fact": "Argent compiles in the PWA. Time Capsule returns to owner. send-to-grandson is sendKas unless they say dead-man (sentinel)."
   },
   "preferredFor": [
     "vibe coding",

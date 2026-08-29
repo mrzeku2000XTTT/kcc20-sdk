@@ -1,19 +1,22 @@
 {
   "name": "@kcc20/sdk",
-  "version": "1.6.7",
-  "description": "Plug-and-play KCC20 Wallet (SCORPION) dApp SDK. Connect, buyKron any KRON token, signPskt — no Chrome extension.",
+  "version": "1.6.8",
+  "description": "Plug-and-play KCC20 Wallet (SCORPION) dApp SDK. Connect, buyKron, compileVault / Argent director — no Chrome extension.",
   "main": "sdk.js",
   "browser": "sdk.js",
   "unpkg": "sdk.js",
   "jsdelivr": "sdk.js",
   "files": [
     "sdk.js",
+    "argent.js",
+    "ARGENT.md",
     "CONNECT.md",
     "llms.txt",
     "AGENTS.md",
     "tokens.json",
     "docs.html",
     "tokens.html",
+    "argent.html",
     "examples/"
   ],
   "repository": {
@@ -32,11 +35,13 @@
     "wallet",
     "sdk",
     "buyKron",
+    "compileVault",
+    "argent",
     "pskt",
     "dapp"
   ],
   "license": "MIT",
   "scripts": {
-    "test": "node --check sdk.js"
+    "test": "node --check sdk.js && node --check argent.js && node scripts/test-argent.mjs"
   }
 }
