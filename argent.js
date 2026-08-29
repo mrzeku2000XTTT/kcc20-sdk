@@ -916,6 +916,36 @@
     return { dest: quote.dest, amount: String(quote.kasAmount), amountKas: String(quote.kasAmount), quoteId: quote.quoteId };
   }
 
+  function onrampPaidMessage(quote) {
+    if (!quote || !parseAddress(quote.dest)) throw new Error('Need buyer kaspa:q');
+    return 'on-ramp paid quote ' + (quote.quoteId || '') + ': send ' + quote.kasAmount + ' kas to ' + quote.dest + ' only that address may spend it';
+  }
+
+  function onrampPaidIntent(quote) {
+    var faucet = onrampFaucet(quote);
+    return {
+      type: 'send',
+      params: { amountKas: Number(faucet.amountKas), destination: faucet.dest, quoteId: faucet.quoteId },
+      complete: true,
+      missing: [],
+      argentChat: onrampPaidMessage(quote),
+      wallet: { method: 'sendKas', dest: faucet.dest, amount: faucet.amount },
+      spendRule: 'P2PK to dest. After the treasury send confirms, only that kaspa:q can spend the KAS. Argent does not need a second covenant for that.',
+      ui: 'Receipt tab: paid. Loading KAS… then show txId. If treasury is watch-only, fail with: import signing key.'
+    };
+  }
+
+  function onrampFlow() {
+    return [
+      { step: 1, who: 'seller', do: 'Create a SIGNING treasury in KCC20 (native PIN or KasWare). Not watch-only. Fund it with KAS to sell.' },
+      { step: 2, who: 'buyer', do: 'Connect or paste their kaspa:q. Quote 5 min: quoteOnramp({ usd, dest }).' },
+      { step: 3, who: 'app POS', do: 'Charge $ on Stripe. Receipt tab: paid. Await KAS loading animation. Do not send if !quoteValid.' },
+      { step: 4, who: 'detect', do: 'Webhook paid=true → tell Argent onrampPaidMessage(q). AI must not invent dest.' },
+      { step: 5, who: 'Argent', do: 'Treasury chip Approves sendKas(onrampFaucet(q)). Optional first: compileVault(onrampCompile(q)) hashlock so only buyer can claim, else 5 min refund to treasury.' },
+      { step: 6, who: 'chain', do: 'KAS sits on buyer kaspa:q (P2PK). Only they can spend. $ sits in Stripe bank, not Kaspa.' }
+    ];
+  }
+
   function oneShot(id) {
     var all = oneShots();
     return all[id] || all.director;
@@ -1049,13 +1079,17 @@
         '     q.kasAmount  q.usdPerKas  q.expiresAt  q.quoteId',
         '     if (!window.kcc20Argent.quoteValid(q)) fetch again.',
         '2) POS (you): Stripe/Base44 payment for q.usd. Never send PAN/CVV to KCC20. Never ask for seed.',
-        '3) After paid=true AND quoteValid(q): FAUCET KAS from the SELLER treasury chip.',
-        '     FAST PATH (default): seller Connects SCORPION, then',
-        '       await kcc.sendKas(window.kcc20Argent.onrampFaucet(q));',
-        '     COVENANT++ PATH: before card, seller compileVault the 5-min hashlock so inventory is locked to the buyer:',
+        '3) After paid=true AND quoteValid(q): DETECT payment (Stripe webhook / Base44 paid). Receipt tab: “Paid. Waiting for Kaspa…” spinner.',
+        '     Push that event to Argent with the REAL dest (do not invent):',
+        '       const paid = window.kcc20Argent.onrampPaidIntent(q);',
+        '       // paid.argentChat → “on-ramp paid … send X kas to kaspa:q…”',
+        '       await kcc.sendKas(paid.wallet);  // treasury SIGNING chip Approves once',
+        '     That send is P2PK to the buyer. After confirm, ONLY that address can spend. No extra covenant required for spend-lock.',
+        '     COVENANT++ (optional, lock inventory BEFORE card):',
         '       await kcc.compileVault(window.kcc20Argent.onrampCompile(q));',
-        '       type is hashlock. receiver = buyer kaspa:q. lockMinutes = 5. If they do not pay, treasury Sweeps refund after 5 min.',
-        '       After POS success, buyer claims with the secret OR seller sendKas if you skipped the lock.',
+        '       hashlock 5 min, receiver = buyer. Unpaid → treasury refund after window. Paid → buyer claims (they sign the claim).',
+        '     There is no server auto-signer. Watch-only treasury cannot send. Keys stay in SCORPION. Seller Approves the faucet (or pre-locks hashlock).',
+        '     Flow: window.kcc20Argent.onrampFlow()',
         '',
         'WHO GETS WHAT — two different rails, never mixed:',
         '- $1 from the card goes to YOUR Stripe/Square BANK (payouts). It never appears in KCC20. Argent cannot withdraw USD. If you did not connect a real POS with a bank, there is NO $1 — do not fake a Pay button.',
@@ -1148,6 +1182,9 @@
     quoteValid: quoteValid,
     onrampCompile: onrampCompile,
     onrampFaucet: onrampFaucet,
+    onrampPaidMessage: onrampPaidMessage,
+    onrampPaidIntent: onrampPaidIntent,
+    onrampFlow: onrampFlow,
     onrampFacts: function () {
       return {
         usdGoesTo: 'Your Stripe/Square bank account. Never Kaspa. Never Argent.',

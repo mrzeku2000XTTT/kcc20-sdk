@@ -106,16 +106,15 @@ Two rails. Do not mix them.
 
 Covenants attach when the treasury **signs the fund tx**. You cannot pre-write rules onto a read-only address. Create/import a real key, fund KAS, then `compileVault` / `sendKas` from that chip.
 
-Argent does **not** charge debit cards. Your Base44/Stripe POS does. After `paid=true`:
+Argent does **not** charge debit cards. Your Base44/Stripe POS does. After `paid=true` (Stripe webhook → receipt tab “Waiting for Kaspa…”):
 
 ```js
-const q = await kcc20Argent.quoteOnramp({ usd: 20, dest: buyerKaspaQ }); // 5 min
-if (!kcc20Argent.quoteValid(q)) throw new Error('expired');
-// FAST: treasury chip
-await kcc.sendKas(kcc20Argent.onrampFaucet(q));
-// or lock inventory first:
-await kcc.compileVault(kcc20Argent.onrampCompile(q)); // hashlock, 5 min, receiver=buyer
+const paid = kcc20Argent.onrampPaidIntent(q);
+// paid.argentChat tells Argent: send X kas to the buyer kaspa:q
+await kcc.sendKas(paid.wallet); // treasury SIGNING chip Approves
 ```
+
+That KAS is then a normal P2PK output: **only the buyer’s address can spend it.** Optional inventory lock first: `compileVault(onrampCompile(q))` (hashlock, 5 min, receiver=buyer). Watch-only treasury cannot do either. There is no auto-signer off-device. Quote: `quoteOnramp({ usd: 20, dest })`.
 
 Prompt: [argent.html#shot-onramp](https://kcc20-sdk.vercel.app/argent.html#shot-onramp) · `oneShot('onramp')`.
 

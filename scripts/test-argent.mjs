@@ -90,6 +90,9 @@ ok('onramp faucet sendKas dest', faucet.dest === buyDest && String(faucet.amount
 const dead = Object.assign({}, q, { expiresAt: Date.now() - 1 });
 ok('expired quote rejected', A.quoteValid(dead) === false);
 ok('oneShot onramp mentions Stripe and sendKas', /Stripe/i.test(A.oneShot('onramp')) && /sendKas/i.test(A.oneShot('onramp')) && /hashlock/i.test(A.oneShot('onramp')));
+const paid = A.onrampPaidIntent(q);
+ok('paid intent is send to buyer', paid.type === 'send' && paid.wallet.dest === buyDest && /send /i.test(paid.argentChat));
+ok('onrampFlow has signing treasury step', A.onrampFlow()[0].do.indexOf('SIGNING') >= 0);
 
 if (process.exitCode) {
   console.error('argent tests failed');
