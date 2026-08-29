@@ -51,6 +51,7 @@
       <a href="#shot-vibe" data-pane="prompts">Vibe economics</a>
       <a href="#shot-llm" data-pane="prompts">LLM system prompt</a>
       <a href="#shot-onramp" data-pane="prompts">Card → KAS on-ramp</a>
+      <a href="#shot-base44" data-pane="prompts">Base44 on-ramp (honest)</a>
     </aside>
     <main>
       <div class="page-tabs" id="argent-tabs">
@@ -231,6 +232,15 @@ else {
         </div>
         <pre class="copy-box" id="pre-onramp">Loading…</pre>
       </section>
+
+      <section class="doc-sec" id="shot-base44" data-keywords="Base44 receipt awaiting Send now hashlock not auto">
+        <h2>6. Base44 — paste this if the agent invents auto-send</h2>
+        <p>Keeps hashlock as pull, seller one-tap <b>Send now</b>, buyer receipt “Awaiting KAS.”</p>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" data-copy="base44Onramp">Copy this prompt</button>
+        </div>
+        <pre class="copy-box" id="pre-base44Onramp">Loading…</pre>
+      </section>
       </div>
     </main>
   </div>
@@ -245,7 +255,7 @@ else {
         if (id === 'llm') return A.promptText(A.llmDirectorPrompt());
         return shots[id] || A.oneShot(id) || '';
       }
-      ['director', 'scorpion', 'vibe', 'llm', 'onramp'].forEach(function (id) {
+      ['director', 'scorpion', 'vibe', 'llm', 'onramp', 'base44Onramp'].forEach(function (id) {
         var el = document.getElementById('pre-' + id);
         if (el) el.textContent = textOf(id);
       });

@@ -93,6 +93,7 @@ ok('oneShot onramp mentions Stripe and sendKas', /Stripe/i.test(A.oneShot('onram
 const paid = A.onrampPaidIntent(q);
 ok('paid intent is send to buyer', paid.type === 'send' && paid.wallet.dest === buyDest && /send /i.test(paid.argentChat));
 ok('onrampFlow has signing treasury step', A.onrampFlow()[0].do.indexOf('SIGNING') >= 0);
+ok('base44 prompt forbids auto-sign', /cannot SIGN/i.test(A.oneShot('base44Onramp')) && /Send now/i.test(A.oneShot('base44Onramp')));
 
 if (process.exitCode) {
   console.error('argent tests failed');

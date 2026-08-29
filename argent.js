@@ -1109,6 +1109,31 @@
         'Dead-man is sentinel, not this. Time Capsule is not an on-ramp (returns to owner).',
         'Docs: https://kcc20-sdk.vercel.app/argent.html#shot-onramp',
         'Done when: quote 20 USD → ~KAS for 5 min, fake/test POS success, treasury sendKas to buyer txId, expired quote refuses send.'
+      ].join('\n'),
+      base44Onramp: [
+        'You are building on Base44 with KCC20 / SCORPION / Argent. Read this as LAW. Do not invent auto-sign, server keys, or “covenant sends by itself.”',
+        '',
+        'PREMISE (you already said this — keep it):',
+        '- Hashlock is a PULL not a push. Treasury locks KAS; BUYER must claim (secret + their sign) within 5 min or it refunds to treasury. It does NOT auto-send after $1.',
+        '- Nothing auto-sends in SCORPION/Argent. Keys never leave the PWA. Every outbound tx needs a human PIN/KasWare tap. AI/workflow may DETECT payment and PREPARE sendKas. It cannot SIGN. A hot-wallet server key is a different product. Do not build that.',
+        '- “Only the buyer can spend” is already true once KAS is sent to their kaspa:q (P2PK). No extra covenant required for that.',
+        '',
+        'BUILD THIS (spirit of auto-delivery, honest mechanics):',
+        '1) Seller desk: SIGNING treasury chip (not watch-only). Funded with KAS. Connect SCORPION on click. sdk.js?v=168 + argent.js.',
+        '2) Buyer: enter USD, paste/Connect kaspa:q, 5-min quote: await kcc20Argent.quoteOnramp({ usd, dest }). Countdown. If !quoteValid, requote. Do not send.',
+        '3) YOU charge the card (Stripe). $1 goes to Stripe bank, never Kaspa. No POS = no $1.',
+        '4) After paid=true: buyer RECEIPT TAB — “Paid. Awaiting KAS…” loading animation. Poll order until deliveryStatus === "delivered" and show txId.',
+        '5) Delivery = SELLER one-tap Send now (default). On seller desk: list paid orders. Button Send now →',
+        '     const paid = kcc20Argent.onrampPaidIntent(q);',
+        '     await window.kcc20.sendKas(paid.wallet);  // seller Approves in SCORPION',
+        '     then set deliveryStatus delivered + txId so the buyer receipt stops spinning.',
+        '6) Do NOT default to Lock & claim hashlock. Optional later: compileVault(onrampCompile(q)) then buyer claims. Not auto-send.',
+        '',
+        'APIs: quoteOnramp, quoteValid, onrampFaucet, onrampPaidIntent, onrampPaidMessage, onrampFlow, onrampFacts.',
+        'sendKas from SIGNING treasury only. compileVault hashlock is optional inventory, not the receipt path.',
+        'Never llmDirectorPrompt().join without promptText(). Never ask seed/PIN/hex. Never overwrite window.kasware.',
+        'Docs: https://kcc20-sdk.vercel.app/argent.html#shot-onramp',
+        'Done when: buyer pays → receipt awaits KAS; seller taps Send now → SCORPION sign → buyer receipt shows txId; expired quote cannot send.'
       ].join('\n')
     };
   }
