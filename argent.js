@@ -68,6 +68,7 @@
     { id: 'sentinel', group: 'alive', name: 'Dead-man switch', type: 'sentinel', compiler: 'buildSentinelChain', repo: 'wallet/js/tx.js Schnorr hop chain shaped like covenants/sentinel (XMSS version is the Python/Node CLI)', returnsTo: 'beneficiary on timeout; owner on check-in', why: 'Check in to prove you are around. Miss it and the heir can take the KAS.' },
     { id: 'recurring', group: 'alive', name: 'Pay on a timer', type: 'recurring', compiler: 'buildRecurringChain', repo: 'x402-kaspa/sentinel-x402 + wallet/js/tx.js', returnsTo: 'payee each check-in; leftover refunds to owner if missed', why: 'Each check-in pays someone and relocks the rest.' },
     { id: 'hashlock', group: 'quantum', name: 'Secret lock', type: 'hashlock', compiler: 'buildHashlockCovenant', repo: 'wallet/js/tx.js', returnsTo: 'receiver with preimage, else sender after timer', why: 'Claim with a secret, or refund when time is up.' },
+    { id: 'onramp', group: 'simple', name: 'Card sale', type: 'onramp', compiler: 'buildHashlockCovenant (5 min, receiver = buyer)', repo: 'wallet/js/tx.js hashlock', returnsTo: 'buyer after they claim; else seller refund', why: 'On-ramp escrow. Seller locks quoted KAS. Buyer claims after card pay. Unpaid refunds in 5 min.' },
     { id: 'xmss', group: 'quantum', name: 'XMSS vault', type: 'xmss', compiler: 'p2shFromRedeemHex(public kit)', repo: 'covenants/xmsslock + keygen/xmss_keygen.py + xmss_sign.py', returnsTo: 'whoever the witness spends to', why: 'Real post-quantum vault. Paste a PUBLIC kit. Never the private JSON. Spend needs ~0.32 KAS extra.' },
     { id: 'send', group: 'simple', name: 'Send KAS', type: 'send', compiler: 'sendKas', repo: null, returnsTo: 'destination', why: 'Plain transfer. Not a P2SH vault. Argent only routes this; it does not compile a covenant.' }
   ];
@@ -97,7 +98,7 @@
     transfert: 'transfer'
   };
 
-  var KNOWN = ['lock', 'freeze', 'send', 'pay', 'escrow', 'multisig', 'sentinel', 'capsule', 'minutes', 'hours', 'days', 'kas', 'kkdag', 'kron', 'kpulse', 'vault', 'hold', 'rent', 'until', 'due', 'save'];
+  var KNOWN = ['lock', 'freeze', 'send', 'pay', 'escrow', 'multisig', 'sentinel', 'capsule', 'minutes', 'hours', 'days', 'kas', 'kkdag', 'kron', 'kpulse', 'vault', 'hold', 'rent', 'until', 'due', 'save', 'sale', 'onramp', 'deadman', 'card'];
 
   function num(raw) {
     if (raw == null) return null;
@@ -248,7 +249,7 @@
     return { value: value, unit: unit, days: days, minutes: minutes, label: value + ' ' + unit };
   }
 
-  var HARD_TYPES = { send: 1, sentinel: 1, escrow: 1, multisig: 1, recurring: 1, hashlock: 1, xmss: 1, kcc20lock: 1 };
+  var HARD_TYPES = { send: 1, sentinel: 1, escrow: 1, multisig: 1, recurring: 1, hashlock: 1, onramp: 1, xmss: 1, kcc20lock: 1 };
 
   function normalizeVaultType(raw) {
     var s = String(raw || '').toLowerCase().replace(/[_/]+/g, ' ').replace(/['’]/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
@@ -265,6 +266,7 @@
       'deadmanswitch': 'sentinel',
       recurring: 'recurring', subscription: 'recurring', x402: 'recurring', 'pay on a timer': 'recurring',
       hashlock: 'hashlock', 'hash lock': 'hashlock', htlc: 'hashlock', 'secret lock': 'hashlock',
+      onramp: 'onramp', 'on ramp': 'onramp', 'card sale': 'onramp', cardsale: 'onramp', 'debit card': 'onramp',
       xmss: 'xmss', 'xmss vault': 'xmss'
     };
     if (exact[s]) return exact[s];
@@ -272,6 +274,7 @@
     if (/time\s*capsule|time\s*lock/.test(s)) return 'timelock';
     if (/multi\s*sig|2\s*of\s*2/.test(s)) return 'multisig';
     if (/escrow/.test(s)) return 'escrow';
+    if (/on\s*ramp|card\s*sale|debit\s*card/.test(s)) return 'onramp';
     if (/hash\s*lock|htlc/.test(s)) return 'hashlock';
     if (/xmss|post\s*quantum/.test(s)) return 'xmss';
     if (/recurring|x402/.test(s)) return 'recurring';
@@ -299,6 +302,7 @@
     if (/\b(escrow|buyer|seller|arbiter|arbitrator)\b/.test(t)) return 'escrow';
     if (/\b(multi-?sig|2\s*of\s*2|both must sign)\b/.test(t)) return 'multisig';
     if (isSentinelTalk(t)) return 'sentinel';
+    if (/\b(on-?ramp|card\s*sale|buy\s+kas(pa)?\s+with\s+(a\s+)?(card|debit|usd|dollar)|debit\s*card)\b/.test(t)) return 'onramp';
     if (/\b(recurring|subscription|x402)\b/.test(t)) return 'recurring';
     if (/\b(hash\s*lock|htlc|hash vault)\b/.test(t)) return 'hashlock';
     if (/\b(xmss|post-?quantum|quantum.?safe vault|public kit)\b/.test(t)) return 'xmss';
@@ -435,6 +439,14 @@
     if (type === 'sentinel' && !params.beneficiary && params.destination) params.beneficiary = params.destination;
     if (type === 'recurring' && address) params.payee = address;
     if (type === 'hashlock' && address) params.receiver = address;
+    if (type === 'onramp') {
+      if (address) params.receiver = address;
+      if (!params.lockMinutes && !params.lockDays) {
+        params.lockMinutes = 5;
+        params.lockDays = 5 / 1440;
+        params.durationLabel = '5 minutes';
+      }
+    }
 
     var missing = [];
     if (!type) missing.push('what to do (lock, escrow, send, freeze, rent, savings, sentinel)');
@@ -468,6 +480,7 @@
         missing.push('how long (e.g. 3 minutes)');
       }
     }
+    if ((type === 'hashlock' || type === 'onramp') && !params.receiver) missing.push('buyer kaspa: address who can claim');
     if (type === 'escrow' && !params.buyerAddress) missing.push('buyer kaspa: address');
     if (type === 'multisig' && !params.counterparty) missing.push('counterparty kaspa: address');
     if (type === 'sentinel' && !params.beneficiary) missing.push('heir / beneficiary kaspa: address');
@@ -501,6 +514,7 @@
     if (intent.type === 'sentinel') return 'Sentinel: lock ' + amt + ' for ' + dur + ', check-in or release to heir ' + (p.beneficiary || '…') + '.';
     if (intent.type === 'recurring') return 'Recurring: lock ' + amt + ' and pay ' + (p.payKas || '?') + ' KAS on each check-in to ' + (p.payee || '…') + '.';
     if (intent.type === 'hashlock') return 'Hash vault: lock ' + amt + ' for ' + dur + ' (secret or refund).';
+    if (intent.type === 'onramp') return 'Card sale: lock ' + amt + ' for ' + dur + ' for buyer ' + (p.receiver || '…') + '. They claim after they pay. Unpaid refunds to you.';
     if (intent.type === 'escrow') return 'Escrow ' + amt + ' for buyer ' + (p.buyerAddress || '…') + '.';
     if (intent.type === 'multisig') return '2-of-2 vault of ' + amt + ' with ' + (p.counterparty || 'a counterparty') + '.';
     if (intent.type === 'xmss') return 'XMSS vault: lock ' + amt + '. Paste a public kit from xmss_keygen.py. Never the private file.';
@@ -519,6 +533,7 @@
     if (first.indexOf('amount') !== -1) return 'How much KAS? You can say “.15 kas”.';
     if (first.indexOf('when it is due') !== -1 || first.indexOf('future due') !== -1) return 'When is it due? Example: “September 1 2026 9:00 UTC”, or say “unlock anytime”.';
     if (first.indexOf('how long') !== -1) return 'How long should it stay locked? Example: “3 minutes” or “30 days”.';
+    if (first.indexOf('who can claim') !== -1 || first.indexOf('buyer kaspa') !== -1) return 'Paste the buyer’s kaspa:q. Only that address can claim this sale lock.';
     if (first.indexOf('buyer') !== -1) return 'Paste the buyer’s kaspa: address.';
     if (first.indexOf('counterparty') !== -1) return 'Paste the other signer’s kaspa: address.';
     if (first.indexOf('destination') !== -1) return 'Paste the destination kaspa: address.';
@@ -704,7 +719,7 @@
       type: 'object',
       required: ['type', 'params'],
       properties: {
-        type: { enum: ['send', 'timelock', 'life', 'escrow', 'multisig', 'kcc20lock', 'sentinel', 'recurring', 'hashlock', 'xmss'] },
+        type: { enum: ['send', 'timelock', 'life', 'escrow', 'multisig', 'kcc20lock', 'sentinel', 'recurring', 'hashlock', 'onramp', 'xmss'] },
         params: {
           type: 'object',
           properties: {
@@ -897,7 +912,7 @@
     if (!quoteValid(quote)) throw new Error('Quote expired. Fetch a new 5-minute price.');
     if (!parseAddress(quote.dest)) throw new Error('Need buyer kaspa:q before compiling the faucet lock');
     return {
-      type: 'hashlock',
+      type: 'onramp',
       params: {
         amountKas: quote.kasAmount,
         lockMinutes: Math.max(1, Math.round(quote.windowMinutes || 5)),
@@ -1111,47 +1126,35 @@
         'Done when: quote 20 USD → ~KAS for 5 min, fake/test POS success, treasury sendKas to buyer txId, expired quote refuses send.'
       ].join('\n'),
       base44Onramp: [
-        'BEST WAY — KAS shop on Base44. Build this exactly. Do not invent auto-sign or a covenant that “sends after $1.”',
+        'BEST WAY — KAS shop on Base44 with Argent ONRAMP escrow (Card sale vault in KCC20 BUILD 179+).',
+        'compileVault({ type: "onramp" }) — seller locks quoted KAS; only buyer kaspa:q can claim after they pay; unpaid refunds in 5 min.',
+        'Do not invent auto-sign or a script that sees Stripe.',
         '',
         'Load only on Connect click:',
         '  <script src="https://kcc-20-wallet.vercel.app/sdk.js?v=168"></script>',
         '  <script src="https://kcc20-sdk.vercel.app/argent.js"></script>',
-        'window.kcc20.sdkVersion >= "168". Wallet BUILD 178+. Origin https://kcc-20-wallet.vercel.app',
+        'window.kcc20.sdkVersion >= "168". Wallet BUILD 179+ (Vault tile Card sale). Origin https://kcc-20-wallet.vercel.app',
         '',
-        'BEST FLOW (plain send, not hashlock):',
-        'Buyer quotes 5 min → pays card (YOUR Stripe) → receipt “Paid. Awaiting KAS…”',
-        'Seller desk: paid order → one-tap Send now → SCORPION PIN → KAS hits buyer kaspa:q.',
-        'Those UTXOs are THEIRS. Only they can spend. $1 is in Stripe bank, never Kaspa.',
+        'SELLABLE FLOW (Argent type onramp — this IS the escrow):',
+        '1) Quote 5 min: q = await kcc20Argent.quoteOnramp({ usd, dest: buyerQ })',
+        '2) Seller SIGNING treasury: await kcc.compileVault(kcc20Argent.onrampCompile(q))',
+        '     type onramp, 5 min, receiver = buyer. Returns kaspa:p + secretHex (keep in YOUR app, never print to buyer until paid).',
+        '3) Buyer pays Stripe. $1 → Stripe bank. Receipt: “Paid. Claim your KAS…”',
+        '4) After paid: give buyer the secret. They Claim in SCORPION (PIN). KAS lands on their kaspa:q — then only they spend.',
+        '5) If they never pay/claim: seller Sweep after 5 min, KAS refunds to treasury.',
+        'Stripe cannot be seen on-chain. You reveal the secret only after paid=true. That is the escrow rule.',
         '',
         'LAW:',
-        '- Argent scripts cannot see Stripe or CoinGecko. App detects paid, then seller SIGNS sendKas.',
-        '- Hashlock is a PULL (buyer claims). Do not use it as default delivery.',
-        '- Keys never leave the PWA. AI prepares; seller taps. No server private key.',
-        '- Watch-only treasury cannot send. Seller chip = native PIN or KasWare that signs.',
-        '- No Stripe bank = no real $1. Do not fake Pay.',
+        '- compileVault type "onramp" (aliases: card sale). Not timelock. Not sendKas as the shop default.',
+        '- Seller PIN to LOCK. Buyer PIN to CLAIM. No auto-sign. Watch-only cannot lock.',
+        '- Secret stays on seller/app until paid. Then buyer claims. Do not put secret in the receipt before paid.',
+        '- No Stripe = no $1. Do not fake Pay.',
         '',
-        'BUYER UI:',
-        '- Connect SCORPION (click) or paste kaspa:q.',
-        '- USD amount. const q = await kcc20Argent.quoteOnramp({ usd, dest: buyerQ });',
-        '- Show q.kasAmount, q.usdPerKas, countdown to q.expiresAt. If !kcc20Argent.quoteValid(q) requote.',
-        '- Pay with card = YOUR Stripe Checkout for q.usd (not KCC20).',
-        '- After paid: RECEIPT TAB spinner “Paid. Awaiting KAS…”. Poll order until deliveryStatus==="delivered". Show txId + explorer. Do not tell them a vault is theirs until send confirms.',
-        '',
-        'SELLER UI (desk):',
-        '- Connect SIGNING treasury (not watch-only). Show KAS balance. If 0, refuse new quotes.',
-        '- List paid-unfilled orders (quoteId, usd, kasAmount, dest, expiresAt).',
-        '- Button Send now (only if quoteValid and dest is kaspa:q):',
-        '    const paid = kcc20Argent.onrampPaidIntent(q);',
-        '    const r = await window.kcc20.sendKas(paid.wallet);',
-        '    save r.txId, deliveryStatus="delivered". Buyer poll stops.',
-        '- Expired quote: button disabled, “requote / refund in Stripe” — do not sendKas.',
-        '- User rejected: leave status paid-unfilled. No retry loop.',
-        '',
-        'Do not compileVault for this path. Do not signPskt. Do not sendToken. Do not buyKron.',
-        'const sys = kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt()); never .join a string.',
-        'Never ask seed/PIN/hex. Never overwrite window.kasware.',
+        'BUYER UI: USD, kaspa:q, countdown, Pay card, then Claim KAS (secret after paid) + spinner until claim txId.',
+        'SELLER UI: Connect signing treasury, Lock this quote (compileVault onrampCompile), list locks, Sweep unpaid.',
+        'Never ask seed/PIN/hex. Never overwrite window.kasware. never llmDirectorPrompt().join without promptText.',
         'Docs: https://kcc20-sdk.vercel.app/argent.html#shot-base44',
-        'Done when: $ pay → buyer receipt awaits; seller Send now → SCORPION sign → receipt shows txId on buyer kaspa:q.'
+        'Done when: seller locks Card sale vault for buyer q; after Stripe paid, buyer claims; unpaid 5 min Sweep refunds seller.'
       ].join('\n')
     };
   }

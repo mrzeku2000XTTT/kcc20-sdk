@@ -84,7 +84,7 @@ const q = A.quoteFromPrice({ usd: 20, usdPerKas: 0.05, dest: buyDest });
 ok('quote kas = usd/price', q.kasAmount === 400);
 ok('quote valid 5 min', A.quoteValid(q) && (q.expiresAt - q.createdAt) === 5 * 60 * 1000);
 const onrampLock = A.onrampCompile(q);
-ok('onramp compiles hashlock 5 min to buyer', onrampLock.type === 'hashlock' && onrampLock.params.receiver === buyDest && onrampLock.params.lockMinutes === 5);
+ok('onramp compiles type onramp 5 min to buyer', onrampLock.type === 'onramp' && onrampLock.params.receiver === buyDest && onrampLock.params.lockMinutes === 5);
 const faucet = A.onrampFaucet(q);
 ok('onramp faucet sendKas dest', faucet.dest === buyDest && String(faucet.amount) === '400');
 const dead = Object.assign({}, q, { expiresAt: Date.now() - 1 });
@@ -93,7 +93,9 @@ ok('oneShot onramp mentions Stripe and sendKas', /Stripe/i.test(A.oneShot('onram
 const paid = A.onrampPaidIntent(q);
 ok('paid intent is send to buyer', paid.type === 'send' && paid.wallet.dest === buyDest && /send /i.test(paid.argentChat));
 ok('onrampFlow has signing treasury step', A.onrampFlow()[0].do.indexOf('SIGNING') >= 0);
-ok('base44 prompt forbids auto-sign', /cannot SIGN/i.test(A.oneShot('base44Onramp')) && /Send now/i.test(A.oneShot('base44Onramp')));
+ok('base44 prompt is onramp escrow', /compileVault/i.test(A.oneShot('base44Onramp')) && /onramp/i.test(A.oneShot('base44Onramp')));
+ok('card sale alias', A.normalizeVaultType('card sale') === 'onramp');
+ok('parse card sale is onramp', A.parseIntent('card sale 10 kas for 5 minutes to kaspa:qrtfjhwty4jp0p5203luswhscl63t4lt0aptgz5dezwjkuk2kteyxu7q4sax6').type === 'onramp');
 
 if (process.exitCode) {
   console.error('argent tests failed');
