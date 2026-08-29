@@ -120,6 +120,17 @@ th { color: #aaa; font-weight: 600; font-size: 12px; text-transform: uppercase; 
 }
 .ok { border: 1px solid #1e4a32; background: #0e1a14; color: #b6e2c8; }
 .warn { border: 1px solid #5a3a12; background: #1a140c; color: #f3e2bf; }
+.page-tabs {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 0 0 18px;
+}
+.page-tabs button {
+  height: 36px; padding: 0 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: #161618; color: var(--muted);
+  font-weight: 700; cursor: pointer; font-family: inherit; font-size: 13px;
+}
+.page-tabs button.on { background: #2a2318; color: var(--gold); border-color: var(--gold); }
+.pane[hidden] { display: none !important; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px; }
 .btn {
   display: inline-flex; align-items: center; height: 42px; padding: 0 16px;

@@ -43,10 +43,12 @@ Implement the same surface so dApps do not fork: Connect on click, silent sessio
 
 ## If they want a vault / Argent / “send KAS to my grandson”
 
-Read `ARGENT.md` and `argent.html`. Load `argent.js` too.
+Read `ARGENT.md` and `argent.html#prompts`. Load `argent.js` too. One-shot: `kcc20Argent.oneShot('director'|'scorpion'|'vibe')`.
+
+System prompt: `kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt())` — never `.join` a string.
 
 - Local parse: `window.kcc20Argent.direct(text)` — no keys.
 - “Send to grandson” is type `send` (plain transfer). Ask for amount + his `kaspa:q`. Time Capsule returns to the **owner**, not him.
 - Dead-man / heir → `compileVault({ type:'sentinel', params:{ amountKas, lockMinutes, beneficiary } })`.
 - Pay now → `sendKas({ dest, amount })`.
-- LLM director prompt: `kcc20Argent.llmDirectorPrompt()`. The LLM directs; Argent in the PWA compiles.
+- LLM director prompt: `kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt())`. The LLM directs; Argent in the PWA compiles.

@@ -22,6 +22,7 @@ Require `window.kcc20.sdkVersion >= "168"` (`buyKron` + `compileVault` + `sendKa
 - [API docs](https://kcc20-sdk.vercel.app/docs.html)
 - [Nilla / signPskt](https://kcc20-sdk.vercel.app/nilla.html)
 - [Argent vault compiler](https://kcc20-sdk.vercel.app/argent.html)
+- [Argent one-shot prompts](https://kcc20-sdk.vercel.app/argent.html#prompts)
 - [Tap2Tip / Base44 buyKron](https://kcc20-sdk.vercel.app/taptotip.html)
 - [Prompt studio](https://kcc20-sdk.vercel.app/prompt.html)
 

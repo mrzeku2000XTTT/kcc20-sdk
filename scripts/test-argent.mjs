@@ -53,8 +53,13 @@ ok('later-lock warns capsule is not heir', later.some(h => h.code === 'capsule-n
 const rent = A.parseIntent('lock 1000 kas for rent until September 1 2026 9:00 UTC');
 ok('rent is life', rent.type === 'life' && rent.params.lifeKind === 'rent');
 
-ok('prompt mentions grandson and Time Capsule owner', /grandson/i.test(A.llmDirectorPrompt()) && /OWNER/i.test(A.llmDirectorPrompt()));
+ok('prompt mentions grandson and Time Capsule owner', /grandson/i.test(A.promptText(A.llmDirectorPrompt())) && /OWNER/i.test(A.promptText(A.llmDirectorPrompt())));
 ok('schema has send+sentinel+xmss', A.intentSchema().properties.type.enum.indexOf('send') >= 0 && A.intentSchema().properties.type.enum.indexOf('xmss') >= 0);
+ok('llmDirectorPrompt().join works', typeof A.llmDirectorPrompt().join === 'function');
+ok('promptText unwraps join', A.promptText(A.llmDirectorPrompt().join('\n')).indexOf('grandson') >= 0);
+ok('promptText on string', A.promptText('hello') === 'hello');
+ok('oneShot director warns about join', /promptText/i.test(A.oneShot('director')) && /join/i.test(A.oneShot('director')));
+ok('oneShot scorpion mentions buyKron', /buyKron/i.test(A.oneShot('scorpion')));
 
 if (process.exitCode) {
   console.error('argent tests failed');

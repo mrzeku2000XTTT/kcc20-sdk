@@ -73,7 +73,9 @@
       '  if (directed.plan.method === "sendKas") await kcc.sendKas(directed.plan.payload);\n' +
       '  else await kcc.compileVault({ type: directed.intent.type, params: directed.intent.params });\n' +
       'compileVault returns { address: "kaspa:p…", txId, type }. sendKas returns { txId, dest, amountKas }.\n' +
-      'Optional LLM layer: system prompt = window.kcc20Argent.llmDirectorPrompt(). Director only — Argent compiles.\n' +
+      'Optional LLM layer: const sys = window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt());\n' +
+      'Never call .join on llmDirectorPrompt() unless you checked it is an array. promptText() always returns a string.\n' +
+      'One-shot prompts: https://kcc20-sdk.vercel.app/argent.html#prompts  window.kcc20Argent.oneShot("director"|"scorpion"|"vibe")\n' +
       'Deep-link: ' + WALLET + '/?tab=vault&argent=' + encodeURIComponent('lock 10 kas for 7 days') + '\n' +
       'Docs: https://kcc20-sdk.vercel.app/argent.html  ARGENT.md\n' +
       'Store only: userId, kaspa:p, type, unlockAt, txId. NEVER keys.\n' +

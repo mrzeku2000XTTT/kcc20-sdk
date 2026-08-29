@@ -32,7 +32,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
   var WALLET = 'https://kcc-20-wallet.vercel.app';
   var REPO = 'https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants';
   var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=168';
@@ -692,14 +692,16 @@
     };
   }
 
-  function llmDirectorPrompt() {
-    return [
-      'You are a vault director for Argent (KCC20 Wallet). You do NOT hold keys. You do NOT compile scripts. You turn the user’s English into one ArgentIntent JSON, then the wallet Argent compiles and the user PIN-signs.',
+  function directorLines(userText) {
+    var lines = [
+      'You are a vault director for Argent (KCC20 Wallet / SCORPION). You do NOT hold keys. You do NOT compile scripts. You turn the user’s English into one ArgentIntent JSON, then the wallet Argent compiles and the user PIN-signs.',
       '',
       'Load in the dApp:',
       '  <script src="' + SDK + '"></script>',
       '  <script src="https://kcc20-sdk.vercel.app/argent.js"></script>',
-      'Parse locally first: const directed = window.kcc20Argent.direct(userText);',
+      'Parse locally first (no LLM required): const directed = window.kcc20Argent.direct(userText);',
+      'Turn ANY llmDirectorPrompt() value into a string with: window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt())',
+      'Do NOT call .join on a string. promptText() accepts a string, an array, or a joinable object.',
       'If directed.complete, on a user click:',
       '  await window.kcc20.connect();',
       '  if (directed.plan.method === "sendKas") await window.kcc20.sendKas(directed.plan.payload);',
@@ -717,12 +719,134 @@
       '8. Recurring needs payee + payKas + lock window. Missed window refunds leftover to owner.',
       '9. KCC20 freeze is type kcc20lock (amountToken + tick + duration). sendToken is a bag transfer, not this.',
       '10. After compileVault the result is { address: "kaspa:p…", txId, type }. pushTx returns { txId, node }. Keys stay at ' + WALLET + '.',
+      '11. SCORPION is window.kcc20. Buy tokens with buyKron({ tick, amount }) where amount is KAS. Do not signPskt for vaults — Argent compiles. Do not overwrite a real window.kasware.',
       '',
       'JSON only when the intent is ready. Schema types: send, timelock, life, escrow, multisig, kcc20lock, sentinel, recurring, hashlock, xmss.',
       'If the user says “send kaspa to his grandson” and has no address, ask for the kaspa:q and the amount. Offer: send now vs dead-man (sentinel) vs lock-for-yourself-then-you-send.',
       '',
-      'Repos: ' + REPO + '  SDK: https://github.com/mrzeku2000XTTT/kcc20-sdk  Docs: https://kcc20-sdk.vercel.app/argent.html'
+      'Repos: ' + REPO + '  SDK: https://github.com/mrzeku2000XTTT/kcc20-sdk  Docs: https://kcc20-sdk.vercel.app/argent.html  Prompts: https://kcc20-sdk.vercel.app/argent.html#prompts'
+    ];
+    if (userText) {
+      lines.push('', 'USER:', String(userText));
+    }
+    return lines;
+  }
+
+  function promptText(raw) {
+    if (raw == null) return '';
+    if (typeof raw === 'function') {
+      try { return promptText(raw()); } catch (e) { return ''; }
+    }
+    if (typeof raw === 'string') return raw;
+    if (typeof raw === 'number' || typeof raw === 'boolean') return String(raw);
+    if (raw && typeof raw.text === 'string') return raw.text;
+    if (raw && typeof raw.join === 'function') {
+      try {
+        var joined = raw.join('\n');
+        if (typeof joined === 'string') return joined;
+      } catch (e) {}
+    }
+    return String(raw);
+  }
+
+  function llmDirectorLines(userText) {
+    return directorLines(userText);
+  }
+
+  function llmDirectorText(userText) {
+    return directorLines(userText).join('\n');
+  }
+
+  function llmDirectorPrompt(userText) {
+    var lines = directorLines(userText);
+    var text = lines.join('\n');
+    var out = lines.slice();
+    out.join = function (sep) {
+      return Array.prototype.join.call(this, sep == null ? '\n' : sep);
+    };
+    out.toString = function () { return text; };
+    out.valueOf = function () { return text; };
+    out.toJSON = function () { return text; };
+    out.text = text;
+    return out;
+  }
+
+  function oneShot(id) {
+    var all = oneShots();
+    return all[id] || all.director;
+  }
+
+  function oneShots() {
+    var load = 'Load ONLY on a Connect click path:\n  <script src="' + SDK + '"></script>\n  <script src="https://kcc20-sdk.vercel.app/argent.js"></script>\nRequire window.kcc20.sdkVersion >= "168". Wallet BUILD 177+. Origin https://kcc-20-wallet.vercel.app';
+    var money = [
+      'Keys NEVER leave the PWA. Never ask seed, PIN, or 64-hex. Never invent a kaspa: address.',
+      'SCORPION = window.kcc20. Connect only from a user click. After Approve the popup closes on purpose.',
+      'Local parse (no LLM): const directed = window.kcc20Argent.direct(userText);',
+      'System prompt for an extra LLM: const sys = window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt());',
+      'llmDirectorPrompt() may be a string OR an array. ALWAYS wrap with promptText(). NEVER do llmDirectorPrompt().join unless you checked typeof join === "function".',
+      'If directed.complete and directed.plan.method === "sendKas": await kcc.sendKas(directed.plan.payload)',
+      'Else vaults: await kcc.compileVault({ type: directed.intent.type, params: directed.intent.params })',
+      'send = plain KAS to kaspa:q. Time Capsule returns to OWNER. Dead-man/heir = sentinel with beneficiary. sendToken is a bag transfer, not a buy. buyKron({ tick, amount }) amount is KAS.',
+      'Handle User rejected. No retry loop. Show txId. Docs: https://kcc20-sdk.vercel.app/argent.html#prompts'
     ].join('\n');
+    return {
+      director: [
+        'Build Argent Director — a mobile chat that turns English into KCC20 vaults / sends. One-shot. Do not invent a compiler.',
+        '',
+        load,
+        '',
+        'UI: dark, Connect SCORPION button, chat log, input “Type your intent (e.g. Lock 10 KAS for 30 days)…”. First bubble: Hello — I compile Kaspa vaults or send KAS. Example: I want to send 10 KAS to my grandson.',
+        'On each message: directed = kcc20Argent.direct(text). Show directed.ask or directed.summary + hints. If complete, gold button Review in wallet.',
+        'On that click: connect() if needed, then sendKas or compileVault. Print txId. If compileVault/sendKas missing, tell them to hard-refresh KCC20 to BUILD 177.',
+        '',
+        'OPTIONAL LLM (do not require an API key to ship):',
+        '  const sys = window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt());',
+        '  If your LLM SDK wants an array of lines, use window.kcc20Argent.llmDirectorLines() then .join("\\n"), or still promptText().',
+        '  If the LLM throws, fall back to local direct() — that is enough.',
+        '',
+        money,
+        '',
+        'Done when: “send 1 kas to my friends wallet” asks for the kaspa:q (do not crash). “lock 10 kas for 7 days” offers compileVault. Grandson line asks amount + address + now vs dead-man. No .join error.'
+      ].join('\n'),
+      scorpion: [
+        'Build a SCORPION agent app with KCC20 rules. Powerful AI agent. One-shot.',
+        '',
+        load,
+        '',
+        'This agent has THREE money tools, nothing else:',
+        '1) Trade KCC20 — await kcc.buyKron({ tick, amount }) amount = KAS. Live ticks: https://kcc20-sdk.vercel.app/tokens.json Skip “?” ticks. sendToken is NOT a buy.',
+        '2) Vault / rules — kcc20Argent.direct(text) then kcc.compileVault or kcc.sendKas. Argent compiles P2SH. You do not signPskt for vaults.',
+        '3) Bag send — kcc.sendToken({ tick, amount, dest }) only if they already hold the tick. dest full kaspa:q.',
+        '',
+        'Chat: user talks. You parse. You ask missing fields. You never hold keys. User taps Approve in SCORPION.',
+        'Scorpion in the wallet is the A-Trade agent (range/dip/trend). Your dApp does not copy that loop unless asked — default is buyKron + Argent.',
+        '',
+        'LLM system prompt MUST be:',
+        '  window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt())',
+        'Then append: you may also buyKron. Do not call .join on a string.',
+        '',
+        money,
+        '',
+        'Done when: Connect works, Buy 10 KAS of KKDAG, and “lock 10 kas for 7 days” compiles a vault, and “send kas to grandson” asks dest instead of crashing.'
+      ].join('\n'),
+      llm: llmDirectorText(),
+      vibe: [
+        'Build TTT Vibe Economics: vibe-code an app that is an economic actor on Kaspa. From the Agent Internet diagram (tttz.xyz).',
+        '',
+        'You → any LLM → INTENT → TTT Agent (action) + ARGENT (compile rules) → KCC-20 baked rules → Kaspa L1 → Wallet A AI ↔ Wallet B AI.',
+        '',
+        load,
+        '',
+        'LLM directs. Argent compiles. Kaspa enforces. Each app gets a KCC20 wallet (SCORPION connect). Rules are compileVault intents, not a server signer.',
+        'Use kcc20Argent.direct locally so the app works even if the LLM is down.',
+        'System prompt: window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt())',
+        '',
+        money,
+        '',
+        'Vibe code it. Give it a wallet. Give it rules. Connect it to AI. Let it interact. No human in every payment.',
+        'Done when: two intents work — sendKas to a pasted kaspa:q, and compileVault timelock — both signed in SCORPION with a txId.'
+      ].join('\n')
+    };
   }
 
   function grandsonExample() {
@@ -781,7 +905,12 @@
     toCompileVaultParams: toCompileVaultParams,
     direct: direct,
     intentSchema: intentSchema,
+    promptText: promptText,
+    llmDirectorLines: llmDirectorLines,
+    llmDirectorText: llmDirectorText,
     llmDirectorPrompt: llmDirectorPrompt,
+    oneShot: oneShot,
+    oneShots: oneShots,
     grandsonExample: grandsonExample
   };
 });

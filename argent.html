@@ -35,20 +35,30 @@
   <div class="wrap">
     <aside>
       <div class="g">Argent</div>
-      <a href="#fact">How Argent really works</a>
-      <a href="#stack">LLM directs Argent</a>
-      <a href="#grandson">Grandson example</a>
-      <a href="#types">Intent types</a>
-      <a href="#install">Install</a>
-      <a href="#compile">compileVault / sendKas</a>
-      <a href="#own">Your own compiler</a>
-      <a href="#repo">Repo map</a>
-      <a href="#prompt">Copy LLM prompt</a>
-      <a href="#try">Try parse</a>
+      <a href="#fact" data-pane="guide">How Argent really works</a>
+      <a href="#stack" data-pane="guide">LLM directs Argent</a>
+      <a href="#grandson" data-pane="guide">Grandson example</a>
+      <a href="#types" data-pane="guide">Intent types</a>
+      <a href="#install" data-pane="guide">Install</a>
+      <a href="#compile" data-pane="guide">compileVault / sendKas</a>
+      <a href="#own" data-pane="guide">Your own compiler</a>
+      <a href="#repo" data-pane="guide">Repo map</a>
+      <a href="#try" data-pane="guide">Try parse</a>
+      <div class="g">Prompts</div>
+      <a href="#prompts" data-pane="prompts">Prompt tab</a>
+      <a href="#shot-director" data-pane="prompts">Argent Director app</a>
+      <a href="#shot-scorpion" data-pane="prompts">Scorpion agent</a>
+      <a href="#shot-vibe" data-pane="prompts">Vibe economics</a>
+      <a href="#shot-llm" data-pane="prompts">LLM system prompt</a>
     </aside>
     <main>
+      <div class="page-tabs" id="argent-tabs">
+        <button type="button" data-pane="guide" class="on">Guide</button>
+        <button type="button" data-pane="prompts">Prompts</button>
+      </div>
+      <div class="pane" id="pane-guide">
       <section class="doc-sec" id="fact" data-keywords="Argent fact check compile P2SH intent.js buildCovenant">
-        <p class="pill">sdkVersion 168 · argent.js 1.0.0</p>
+        <p class="pill">sdkVersion 168 · argent.js 1.1.0</p>
         <h1>Argent vault compiler</h1>
         <p>Argent is the vault agent inside <a href="https://kcc-20-wallet.vercel.app">KCC20 Wallet</a>. It is <b>not</b> a hosted XMSS compiler and it does <b>not</b> hold keys.</p>
         <table>
@@ -160,34 +170,105 @@ else {
         <p>Node CLI uses <code>@onekeyfe/kaspa-wasm</code> (Node only). Browser uses rusty-kaspa web WASM. Do not mix.</p>
       </section>
 
-      <section class="doc-sec" id="prompt" data-keywords="LLM system prompt copy">
-        <h2>Copy this into your LLM / Replit / Nilla</h2>
-        <div class="hero-actions">
-          <button class="btn gold" type="button" id="copy-prompt">Copy director prompt</button>
-        </div>
-        <pre class="copy-box" id="replit-prompt">Loading…</pre>
-      </section>
-
       <section class="doc-sec" id="try" data-keywords="try parse grandson demo">
         <h2>Try parse (local, no keys)</h2>
         <p><a class="btn gold" href="examples/argent-demo.html">Open argent-demo</a></p>
         <p>Or in this page’s console: <code>kcc20Argent.direct('I want to send Kaspa to my grandson.')</code></p>
       </section>
+      </div>
+
+      <div class="pane" id="pane-prompts" hidden>
+      <section class="doc-sec" id="prompts" data-keywords="prompt tab one-shot Replit Base44 Cursor Scorpion vibe">
+        <p class="pill">one-shot · SCORPION · Argent</p>
+        <h1>Prompts</h1>
+        <p>Paste one of these into Replit, Base44, Cursor, Grok, or TTT Builder. The agent one-shots an Argent-ready app. Keys stay in KCC20. <b>Never</b> call <code>.join</code> on <code>llmDirectorPrompt()</code> without <code>promptText()</code> — that is the crash in the screenshot.</p>
+        <div class="warn">Safe line: <code>const sys = window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt());</code></div>
+        <p>Also: <code>kcc20Argent.oneShot('director' | 'scorpion' | 'vibe')</code></p>
+      </section>
+
+      <section class="doc-sec" id="shot-director" data-keywords="Argent Director chat grandson join">
+        <h2>1. Argent Director app</h2>
+        <p>Chat UI like the screenshot. Local parse first. Optional LLM. Connect SCORPION. <code>sendKas</code> / <code>compileVault</code>.</p>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" data-copy="director">Copy this prompt</button>
+        </div>
+        <pre class="copy-box" id="pre-director">Loading…</pre>
+      </section>
+
+      <section class="doc-sec" id="shot-scorpion" data-keywords="Scorpion agent buyKron KCC20 rules">
+        <h2>2. Scorpion agent + KCC20 rules</h2>
+        <p>Powerful agent: buy any KRON tick, lock vaults, send KAS. SCORPION signs. Argent compiles rules.</p>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" data-copy="scorpion">Copy this prompt</button>
+        </div>
+        <pre class="copy-box" id="pre-scorpion">Loading…</pre>
+      </section>
+
+      <section class="doc-sec" id="shot-vibe" data-keywords="vibe economics TTT Agent Internet">
+        <h2>3. Vibe economics (TTT Agent Internet)</h2>
+        <p>LLM directs → Argent compiles rules → Kaspa enforces. App becomes an economic actor.</p>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" data-copy="vibe">Copy this prompt</button>
+        </div>
+        <pre class="copy-box" id="pre-vibe">Loading…</pre>
+      </section>
+
+      <section class="doc-sec" id="shot-llm" data-keywords="LLM system prompt promptText">
+        <h2>4. LLM system prompt only</h2>
+        <p>Drop this in as <code>system</code>. Already a string. Use <code>promptText()</code> if you load it from <code>argent.js</code>.</p>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" data-copy="llm">Copy this prompt</button>
+        </div>
+        <pre class="copy-box" id="pre-llm">Loading…</pre>
+      </section>
+      </div>
     </main>
   </div>
   <script src="argent.js"></script>
   <script src="js/docs.js"></script>
   <script>
     (function () {
-      var pre = document.getElementById('replit-prompt');
       var A = window.kcc20Argent;
-      if (pre && A) pre.textContent = A.llmDirectorPrompt();
-      document.getElementById('copy-prompt')?.addEventListener('click', function () {
-        var t = (A && A.llmDirectorPrompt()) || pre?.innerText || '';
-        navigator.clipboard.writeText(t).then(function () {
-          document.getElementById('copy-prompt').textContent = 'Copied';
-        }).catch(function () {});
+      var shots = A && A.oneShots ? A.oneShots() : {};
+      function textOf(id) {
+        if (!A) return '';
+        if (id === 'llm') return A.promptText(A.llmDirectorPrompt());
+        return shots[id] || A.oneShot(id) || '';
+      }
+      ['director', 'scorpion', 'vibe', 'llm'].forEach(function (id) {
+        var el = document.getElementById('pre-' + id);
+        if (el) el.textContent = textOf(id);
       });
+      function showPane(name) {
+        var g = document.getElementById('pane-guide');
+        var p = document.getElementById('pane-prompts');
+        if (g) g.hidden = name !== 'guide';
+        if (p) p.hidden = name !== 'prompts';
+        document.querySelectorAll('#argent-tabs button').forEach(function (b) {
+          b.classList.toggle('on', b.getAttribute('data-pane') === name);
+        });
+        try { history.replaceState(null, '', name === 'prompts' ? '#prompts' : '#fact'); } catch (e) {}
+      }
+      document.getElementById('argent-tabs')?.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-pane]');
+        if (!b) return;
+        showPane(b.getAttribute('data-pane'));
+      });
+      document.querySelector('aside')?.addEventListener('click', function (e) {
+        var a = e.target.closest('a[data-pane]');
+        if (!a) return;
+        showPane(a.getAttribute('data-pane'));
+      });
+      document.querySelectorAll('[data-copy]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = btn.getAttribute('data-copy');
+          var t = textOf(id);
+          navigator.clipboard.writeText(t).then(function () {
+            btn.textContent = 'Copied';
+          }).catch(function () {});
+        });
+      });
+      if (/prompt|shot-|scorpion|vibe|director/i.test(location.hash || '')) showPane('prompts');
     })();
   </script>
 </body>

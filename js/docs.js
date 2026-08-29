@@ -49,6 +49,9 @@
     ['grandson', 'argent'],
     ['sentinel', 'argent'],
     ['vault', 'argent'],
+    ['promptText', 'prompts'],
+    ['oneShot', 'prompts'],
+    ['Scorpion agent', 'shot-scorpion'],
     ['TTT', 'recipes'],
     ['KRON', 'nilla'],
     ['false stack', 'nilla']
@@ -62,9 +65,12 @@
       location.href = 'nilla.html';
       return;
     }
-    if (id === 'argent' && !document.getElementById('fact')) {
+    if (id === 'argent' && !document.getElementById('fact') && !document.getElementById('prompts')) {
       location.href = 'argent.html';
       return;
+    }
+    if ((id === 'prompts' || id === 'shot-scorpion') && document.getElementById('pane-prompts')) {
+      location.hash = id === 'shot-scorpion' ? 'shot-scorpion' : 'prompts';
     }
     if ((id === 'ttt' || id === 'buy') && !document.getElementById('ttt') && !document.getElementById('buy')) {
       location.href = 'taptotip.html';

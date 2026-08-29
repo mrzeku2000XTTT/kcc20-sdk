@@ -102,9 +102,24 @@ Types: `send` · `timelock` · `life` · `escrow` · `multisig` · `kcc20lock` �
 ## Create your own Argent
 
 1. Load `argent.js`. Use `parseIntent` / `direct` / `askFor` — same rules as the PWA orb.
-2. Sit any LLM in front with `argent.llmDirectorPrompt()`. That is the Nilla-Gorilla layer: director, not compiler.
-3. On a **user click**, `kcc.compileVault` or `kcc.sendKas`. Do not compile scripts in your backend. Do not ask for keys.
-4. To use the **repo** XMSS path yourself (offline): `python3 keygen/xmss_keygen.py` then `covenants/xmsslock/deploy_xmss_generic.mjs`. The PWA only funds the address and broadcasts a witness.
+2. Sit any LLM in front with:
+
+```js
+const sys = window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt());
+```
+
+`llmDirectorPrompt()` may be a string **or** an array (vibe apps call `.join`). Always wrap with `promptText()`. Never `llmDirectorPrompt().join` on a string — that crash is `join is not a function`.
+
+3. One-shot a whole platform from the **Prompts** tab: [argent.html#prompts](https://kcc20-sdk.vercel.app/argent.html#prompts)
+
+```js
+kcc20Argent.oneShot('director')  // chat UI + sendKas / compileVault
+kcc20Argent.oneShot('scorpion')  // agent + buyKron + KCC20 rules
+kcc20Argent.oneShot('vibe')      // TTT Agent Internet / vibe economics
+```
+
+4. On a **user click**, `kcc.compileVault` or `kcc.sendKas`. Do not compile scripts in your backend. Do not ask for keys.
+5. To use the **repo** XMSS path yourself (offline): `python3 keygen/xmss_keygen.py` then `covenants/xmsslock/deploy_xmss_generic.mjs`. The PWA only funds the address and broadcasts a witness.
 
 Deep-link (no RPC): `https://kcc-20-wallet.vercel.app/?tab=vault&argent=lock%2010%20kas%20for%207%20days`
 

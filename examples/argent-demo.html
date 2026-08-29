@@ -56,7 +56,8 @@
     }
     document.getElementById('parse').onclick = show;
     document.getElementById('prompt').onclick = function () {
-      navigator.clipboard.writeText(A.llmDirectorPrompt()).then(function () {
+      var t = A.promptText(A.llmDirectorPrompt());
+      navigator.clipboard.writeText(t).then(function () {
         document.getElementById('prompt').textContent = 'Copied';
       });
     };
