@@ -32,7 +32,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.1.2';
   var WALLET = 'https://kcc-20-wallet.vercel.app';
   var REPO = 'https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants';
   var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=168';
@@ -246,6 +246,42 @@
     return { value: value, unit: unit, days: days, minutes: minutes, label: value + ' ' + unit };
   }
 
+  var HARD_TYPES = { send: 1, sentinel: 1, escrow: 1, multisig: 1, recurring: 1, hashlock: 1, xmss: 1, kcc20lock: 1 };
+
+  function normalizeVaultType(raw) {
+    var s = String(raw || '').toLowerCase().replace(/[_/]+/g, ' ').replace(/['’]/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!s) return '';
+    var exact = {
+      send: 'send', pay: 'send', transfer: 'send',
+      timelock: 'timelock', 'time lock': 'timelock', 'time capsule': 'timelock', capsule: 'timelock', lock: 'timelock',
+      life: 'life', rent: 'life',
+      escrow: 'escrow', 'hold for buyer': 'escrow',
+      multisig: 'multisig', 'multi sig': 'multisig', 'two keys': 'multisig', '2 of 2': 'multisig', '2of2': 'multisig',
+      kcc20lock: 'kcc20lock', kcc20freeze: 'kcc20lock', freeze: 'kcc20lock', 'freeze tokens': 'kcc20lock',
+      sentinel: 'sentinel', deadman: 'sentinel', 'dead man': 'sentinel', 'dead man switch': 'sentinel',
+      'deadmans switch': 'sentinel', 'dead man s switch': 'sentinel', dms: 'sentinel', heir: 'sentinel',
+      'deadmanswitch': 'sentinel',
+      recurring: 'recurring', subscription: 'recurring', x402: 'recurring', 'pay on a timer': 'recurring',
+      hashlock: 'hashlock', 'hash lock': 'hashlock', htlc: 'hashlock', 'secret lock': 'hashlock',
+      xmss: 'xmss', 'xmss vault': 'xmss'
+    };
+    if (exact[s]) return exact[s];
+    if (/dead\s*mans?|deadmanswitch|sentinel|\bdms\b|\bheir\b|check\s*in/.test(s)) return 'sentinel';
+    if (/time\s*capsule|time\s*lock/.test(s)) return 'timelock';
+    if (/multi\s*sig|2\s*of\s*2/.test(s)) return 'multisig';
+    if (/escrow/.test(s)) return 'escrow';
+    if (/hash\s*lock|htlc/.test(s)) return 'hashlock';
+    if (/xmss|post\s*quantum/.test(s)) return 'xmss';
+    if (/recurring|x402/.test(s)) return 'recurring';
+    if (/kcc20\s*freeze|freeze tokens/.test(s)) return 'kcc20lock';
+    return s.replace(/\s+/g, '');
+  }
+
+  function isSentinelTalk(t) {
+    t = String(t || '').toLowerCase();
+    return /sentinel|dead\s*-?\s*mans?|deadmanswitch|\bdms\b|check-?in|when i die|if i (die|pass)|after i.?m gone|inherit|\bheir\b|beneficiar/.test(t);
+  }
+
   function parseAddress(text) {
     var m = String(text || '').match(ADDR_RE);
     if (!m) return null;
@@ -260,7 +296,7 @@
     var t = text.toLowerCase();
     if (/\b(escrow|buyer|seller|arbiter|arbitrator)\b/.test(t)) return 'escrow';
     if (/\b(multi-?sig|2\s*of\s*2|both must sign)\b/.test(t)) return 'multisig';
-    if (/\b(sentinel|dead.?man|check-?in|when i die|if i (die|pass)|after i.?m gone|inherit)\b/.test(t)) return 'sentinel';
+    if (isSentinelTalk(t)) return 'sentinel';
     if (/\b(recurring|subscription|x402)\b/.test(t)) return 'recurring';
     if (/\b(hash\s*lock|htlc|hash vault)\b/.test(t)) return 'hashlock';
     if (/\b(xmss|post-?quantum|quantum.?safe vault|public kit)\b/.test(t)) return 'xmss';
@@ -340,7 +376,13 @@
     if (!due && prev && prev.params && prev.params.dueAt) due = { at: prev.params.dueAt, label: prev.params.dueLabel };
     var unlockAnytime = parseUnlockAnytime(raw) || (!!(prev && prev.params && prev.params.unlockAnytime) && !due);
     var type = detectType(raw, prev);
-    if (lifeKind || unlockAnytime || (due && amountKas)) type = 'life';
+    if (prev && prev.type) {
+      var prevT = normalizeVaultType(prev.type);
+      if (HARD_TYPES[prevT] && !type) type = prevT;
+      if (HARD_TYPES[type] && HARD_TYPES[prevT] && type !== prevT && isSentinelTalk(raw)) type = 'sentinel';
+    }
+    type = normalizeVaultType(type) || type;
+    if (!HARD_TYPES[type] && (lifeKind || unlockAnytime || (due && amountKas))) type = 'life';
 
     if (!type && !amountKas && !tokenAmt && !duration && !address && !lifeKind && !due) {
       return { error: 'unparsed', hint: 'Try: Lock 1000 KAS for rent until September 1 2026 9:00 UTC' };
@@ -388,6 +430,7 @@
     if (type === 'multisig' && address) params.counterparty = address;
     if (type === 'send' && address) params.destination = address;
     if (type === 'sentinel' && address) params.beneficiary = address;
+    if (type === 'sentinel' && !params.beneficiary && params.destination) params.beneficiary = params.destination;
     if (type === 'recurring' && address) params.payee = address;
     if (type === 'hashlock' && address) params.receiver = address;
 
@@ -568,7 +611,7 @@
   }
 
   function compilePlan(intent) {
-    var type = intent && intent.type;
+    var type = normalizeVaultType(intent && intent.type) || (intent && intent.type);
     var product = null;
     var i;
     for (i = 0; i < PRODUCTS.length; i++) {
@@ -622,10 +665,11 @@
   function toCompileVaultParams(intent) {
     var v = validateIntent(intent);
     if (!v.ok) return { error: v.error || v.ask, missing: v.missing, ask: v.ask };
-    if (intent.type === 'send') {
+    var ctype = normalizeVaultType(intent.type) || intent.type;
+    if (ctype === 'send') {
       return { method: 'sendKas', dest: intent.params.destination, amount: String(intent.params.amountKas) };
     }
-    return { method: 'compileVault', type: intent.type, params: intent.params };
+    return { method: 'compileVault', type: ctype, params: intent.params };
   }
 
   function direct(text, prev) {
@@ -931,6 +975,7 @@
     sdk: SDK,
     PRODUCTS: PRODUCTS,
     LIFE_KINDS: LIFE_KINDS,
+    normalizeVaultType: normalizeVaultType,
     parseRentKind: parseRentKind,
     parseLifeKind: parseLifeKind,
     parseUnlockAnytime: parseUnlockAnytime,

@@ -62,6 +62,23 @@ ok('oneShot director warns about join', /promptText/i.test(A.oneShot('director')
 ok('oneShot scorpion mentions buyKron', /buyKron/i.test(A.oneShot('scorpion')));
 ok('oneShot nilla routes compileVault and buyKron', /compileVault/i.test(A.oneShot('nilla')) && /buyKron/i.test(A.oneShot('nilla')) && /promptText/i.test(A.oneShot('nilla')));
 
+ok('alias deadman → sentinel', A.normalizeVaultType('deadman') === 'sentinel');
+ok('alias dead man switch → sentinel', A.normalizeVaultType('dead man switch') === 'sentinel');
+ok('alias Time Capsule → timelock', A.normalizeVaultType('Time Capsule') === 'timelock');
+
+const dms = A.parseIntent('I need a deadman switch');
+ok('deadman switch phrase is sentinel', dms.type === 'sentinel');
+
+const dmsLock = A.parseIntent('deadman switch lock 10 kas for 30 days');
+ok('deadman + lock is sentinel not timelock', dmsLock.type === 'sentinel');
+ok('deadman + lock not life', dmsLock.type !== 'life' && dmsLock.type !== 'timelock');
+
+const dmsDue = A.parseIntent('deadman 10 kas until September 1 2027 heir kaspa:qrtfjhwty4jp0p5203luswhscl63t4lt0aptgz5dezwjkuk2kteyxu7q4sax6');
+ok('deadman + due date stays sentinel', dmsDue.type === 'sentinel');
+
+const forced = A.parseIntent('deadman switch lock 10 kas for 7 days', { type: 'timelock', params: { amountKas: 10 } });
+ok('message sentinel beats prev timelock', forced.type === 'sentinel');
+
 if (process.exitCode) {
   console.error('argent tests failed');
   process.exit(1);

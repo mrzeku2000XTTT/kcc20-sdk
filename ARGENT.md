@@ -95,6 +95,8 @@ Local parse needs **no** Connect. Compile/send opens the PWA.
 
 Types: `send` · `timelock` · `life` · `escrow` · `multisig` · `kcc20lock` · `sentinel` · `recurring` · `hashlock` · `xmss`
 
+Aliases (so a dead-man never becomes a Time Capsule): `deadman` / `dead man switch` / `dms` → `sentinel`. `Time Capsule` / `capsule` → `timelock`. Use `kcc20Argent.normalizeVaultType('deadman switch') === 'sentinel'`. Pass `compileVault({ type: 'sentinel', params: { amountKas, lockMinutes, beneficiary } })`. A message that says dead-man **wins** over a default `type: 'timelock'`.
+
 `argent.intentSchema()` returns the JSON Schema. `argent.PRODUCTS` is the catalog (compiler function + repo path).
 
 ---
