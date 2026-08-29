@@ -43,6 +43,8 @@
     ['tokenlist', 'tokens'],
     ['Nilla Gorilla', 'nilla'],
     ['Nilla', 'nilla'],
+    ['one-shot', 'prompt'],
+    ['working reality', 'reality'],
     ['Argent', 'argent'],
     ['compileVault', 'argent'],
     ['sendKas', 'argent'],

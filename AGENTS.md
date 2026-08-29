@@ -37,7 +37,7 @@ Implement the same surface so dApps do not fork: Connect on click, silent sessio
 - https://kcc20-sdk.vercel.app/llms-full.txt
 - https://kcc20-sdk.vercel.app/tokens.html
 - https://kcc20-sdk.vercel.app/docs.html
-- https://kcc20-sdk.vercel.app/nilla.html
+- https://kcc20-sdk.vercel.app/nilla.html#prompt  (Nilla one-shot: type intent, SDK, Argent, SCORPION)
 - https://kcc20-sdk.vercel.app/argent.html
 - https://kcc20-sdk.vercel.app/taptotip.html
 

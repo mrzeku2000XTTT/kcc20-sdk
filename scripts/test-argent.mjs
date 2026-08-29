@@ -60,6 +60,7 @@ ok('promptText unwraps join', A.promptText(A.llmDirectorPrompt().join('\n')).ind
 ok('promptText on string', A.promptText('hello') === 'hello');
 ok('oneShot director warns about join', /promptText/i.test(A.oneShot('director')) && /join/i.test(A.oneShot('director')));
 ok('oneShot scorpion mentions buyKron', /buyKron/i.test(A.oneShot('scorpion')));
+ok('oneShot nilla routes compileVault and buyKron', /compileVault/i.test(A.oneShot('nilla')) && /buyKron/i.test(A.oneShot('nilla')) && /promptText/i.test(A.oneShot('nilla')));
 
 if (process.exitCode) {
   console.error('argent tests failed');

@@ -97,10 +97,14 @@
   }
 
   function tmplSign(intent) {
-    return baseRules() + '\n\nUSER INTENT:\n' + intent + '\n\nBUILD: you construct unsigned rusty-kaspa Safe JSON (KRON/Cook/covenant). Wallet only signs P2PK.\n' +
-      'See Nilla tab. signInputs.index = GLOBAL input index. Typical KRON buy: last input is user P2PK, not 0.\n' +
+    return baseRules() + '\n\nUSER INTENT:\n' + intent + '\n\nBUILD Nilla Gorilla as a WORKING app: anyone types intent, KCC20 SDK routes, Argent compiles vaults, SCORPION broadcasts.\n' +
+      'Copy the canonical prompt from https://kcc20-sdk.vercel.app/nilla.html#prompt or window.kcc20Argent.oneShot("nilla").\n' +
+      'Also load https://kcc20-sdk.vercel.app/argent.js\n' +
+      'Route: buyKron (tick buy, amount=KAS) | sendKas | compileVault | sendToken (held bag) | signPskt only if YOU built unsigned Safe JSON.\n' +
+      'signInputs.index = GLOBAL tx.inputs[]. P2PK only. Typical KRON builder path: last input is user P2PK, not 0.\n' +
       'Funding input MUST include utxo { amount, scriptPublicKey, address }.\n' +
-      'pushTx returns { txId, node } — read result.txId, not the whole object as a hex string.';
+      'pushTx returns { txId, node } — read result.txId.\n' +
+      'const sys = window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt()); never .join a string.';
   }
 
   function tmplDapp(intent) {

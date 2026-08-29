@@ -44,15 +44,18 @@
       <a href="#broadcast-nilla">Broadcast</a>
       <a href="#false-stack">false stack</a>
       <a href="#checklist">10-point check</a>
-      <a href="#prompt">Copy Replit prompt</a>
+      <a href="#reality">Working reality</a>
+      <a href="#prompt">One-shot prompt</a>
+      <a href="#prompt-debug">False-stack debug prompt</a>
     </aside>
     <main>
       <section class="doc-sec" id="nilla" data-keywords="Nilla Gorilla SCORPION status connected KRON">
-        <p class="pill">SCORPION · BUILD 167 · sdk v166</p>
+        <p class="pill">SCORPION · BUILD 177 · sdk v168 · Argent</p>
         <h1>Nilla Gorilla</h1>
-        <p>This tab is the contract for Nilla (and any KRON copilot). Plug in like KasWare, using <code>window.kcc20</code>. You build the unsigned tx. The user signs in the KCC20 PWA. Keys never leave the wallet.</p>
+        <p>This tab is the contract for Nilla (and any copilot). Anyone types intent. The KCC20 SDK (SCORPION) routes it. Argent compiles vaults. The user Approves in the PWA. Keys never leave the wallet.</p>
         <div class="hero-actions">
-          <a class="btn gold" href="demo.html">Try Connect in this site</a>
+          <a class="btn gold" href="#prompt">Copy Nilla one-shot</a>
+          <a class="btn ghost" href="demo.html">Try Connect</a>
         </div>
         <table>
           <thead><tr><th>Step</th><th>Status</th></tr></thead>
@@ -83,11 +86,12 @@
 
       <section class="doc-sec" id="install-nilla" data-keywords="install sdkVersion 166 BUILD 167 script">
         <h2>Install</h2>
-        <p class="sig">script src="https://kcc-20-wallet.vercel.app/sdk.js?v=166"</p>
-        <p>Required: <code>window.kcc20.sdkVersion === "166"</code> and origin <code>https://kcc-20-wallet.vercel.app</code>.</p>
-        <p>User PWA must show <b>BUILD 167</b> (hard-refresh). 167 skips P2SH / already-signed covenant inputs even if you list them. Still pass only P2PK global indexes.</p>
+        <p class="sig">script src="https://kcc-20-wallet.vercel.app/sdk.js?v=168"</p>
+        <p class="sig">script src="https://kcc20-sdk.vercel.app/argent.js"</p>
+        <p>Required: <code>window.kcc20.sdkVersion &gt;= "168"</code> and origin <code>https://kcc-20-wallet.vercel.app</code>.</p>
+        <p>User PWA must show <b>BUILD 177</b> (hard-refresh) so <code>compileVault</code> / <code>sendKas</code> exist. For <code>signPskt</code>, still pass only P2PK global indexes. 167+ skips P2SH / already-signed covenant inputs.</p>
 <pre>delete window.kcc20; delete window.kcc20wallet;
-// inject sdk.js?v=166, wait for kcc20#initialized</pre>
+// inject sdk.js?v=168 + argent.js, wait for kcc20#initialized</pre>
       </section>
 
       <section class="doc-sec" id="session-nilla" data-keywords="session popup close silent getPublicKey getUtxoEntries">
@@ -147,12 +151,36 @@ const txId = typeof r === 'string' ? r : (r && r.txId);
         </ol>
       </section>
 
-      <section class="doc-sec" id="prompt" data-keywords="Replit prompt copy paste agent">
-        <h2>Copy this into the Replit agent</h2>
+      <section class="doc-sec" id="reality" data-keywords="intent argent compileVault buyKron sendKas working reality SCORPION">
+        <h2>Working reality — type intent, SDK routes, Argent compiles, SCORPION broadcasts</h2>
+        <pre>anyone types intent
+    → kcc20Argent.direct(text)          // local, no keys
+    → buy / KKDAG / KRON   kcc.buyKron({ tick, amount })   // amount = KAS. Wallet builds.
+    → send KAS / grandson  kcc.sendKas({ dest, amount })   // kaspa:q. Not a vault.
+    → lock / vault / heir  kcc.compileVault({ type, params }) // Argent compiles kaspa:p
+    → held bag             kcc.sendToken({ tick, amount, dest })
+    → YOU built Safe JSON  kcc.signPskt(P2PK global indexes) → kcc.pushTx → { txId, node }
+    → user Approves in SCORPION PWA</pre>
+        <p>Do <b>not</b> <code>signPskt</code> for <code>buyKron</code> or <code>compileVault</code>. The wallet / Argent builds those. <code>signPskt</code> is only when Nilla assembled the unsigned tx. Time Capsule returns to the <b>owner</b>. “Send to grandson” is <code>sendKas</code> unless they say dead-man.</p>
+        <div class="warn">LLM system prompt: <code>kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt())</code> — never <code>.join</code> a string.</div>
+      </section>
+
+      <section class="doc-sec" id="prompt" data-keywords="Replit prompt copy paste Nilla one-shot Argent Scorpion">
+        <h2>One-shot prompt — paste into Replit / Base44 / Cursor / TTT Builder</h2>
+        <p>This is the prompt that makes Nilla Gorilla a working app: typed intent, KCC20 SDK, Argent compiler, broadcast on SCORPION.</p>
         <div class="hero-actions">
-          <button class="btn gold" type="button" id="copy-prompt">Copy prompt</button>
+          <button class="btn gold" type="button" id="copy-prompt">Copy Nilla one-shot</button>
         </div>
-        <pre class="copy-box" id="replit-prompt">You are Nilla Gorilla. Do NOT return to Connect/session work. That path already succeeded.
+        <pre class="copy-box" id="replit-prompt">Loading…</pre>
+      </section>
+
+      <section class="doc-sec" id="prompt-debug" data-keywords="false stack debug replit">
+        <h2>False-stack debug prompt (only if a custom signPskt already failed)</h2>
+        <p>Do not use this to build the app. Use it only if you took the builder path and Kaspa returned <code>false stack entry at end of script execution</code>.</p>
+        <div class="hero-actions">
+          <button class="btn ghost" type="button" id="copy-debug">Copy debug prompt</button>
+        </div>
+        <pre class="copy-box" id="debug-prompt">You are Nilla Gorilla. Do NOT return to Connect/session work. That path already succeeded.
 
 Live result stands:
 - SCORPION connected
@@ -169,12 +197,13 @@ Do NOT rebroadcast the failed signed tx.
 Do NOT change KRON quote logic, covenant construction, output amounts, fees, approval UI, or broadcast behavior.
 Do NOT sign covenant / curve / inventory inputs.
 Do NOT add alternate signing fallbacks.
+For a shop / intent buy, use buyKron instead of assembling KRON PSKTs.
 
 SCORPION (source of truth, not KasWare demo)
-Wallet: https://kcc-20-wallet.vercel.app   BUILD 167 (hard-refresh)
-SDK:    https://kcc-20-wallet.vercel.app/sdk.js?v=166
-Nilla tab: this page (nilla.html)
-Docs:   https://github.com/mrzeku2000XTTT/kcc20-sdk
+Wallet: https://kcc-20-wallet.vercel.app   BUILD 177 (hard-refresh)
+SDK:    https://kcc-20-wallet.vercel.app/sdk.js?v=168
+Argent: https://kcc20-sdk.vercel.app/argent.js
+Nilla tab: https://kcc20-sdk.vercel.app/nilla.html
 
 signPskt:
   await window.kcc20.signPskt({
@@ -188,23 +217,36 @@ Typical KRON buy: 0 = curve, 1 = inventory, last = P2PK. Confirm from YOUR unsig
 sighashType must be 1.
 
 v166 P2PK-signed every listed index (including curve) — that is the false-stack error.
-v167 skips already-signed / P2SH. Still pass ONLY P2PK global indexes.
+v167+ skips already-signed / P2SH. Still pass ONLY P2PK global indexes.
 
 Unsigned P2PK funding input MUST include utxo { amount, scriptPublicKey, address }.
+pushTx returns { txId, node }. Read result.txId.
 
 JOB: compare the FAILED unsigned vs signed (no bodies/secrets) using the 10-point check on the Nilla Gorilla tab. Then Sign again with only those G indexes. Do not rebroadcast the old blob.
 </pre>
       </section>
     </main>
   </div>
+  <script src="argent.js"></script>
   <script src="js/docs.js"></script>
   <script>
-    document.getElementById('copy-prompt')?.addEventListener('click', function () {
-      var t = document.getElementById('replit-prompt')?.innerText || '';
-      navigator.clipboard.writeText(t).then(function () {
-        document.getElementById('copy-prompt').textContent = 'Copied';
-      }).catch(function () {});
-    });
+    (function () {
+      var A = window.kcc20Argent;
+      var pre = document.getElementById('replit-prompt');
+      if (pre && A && A.oneShot) pre.textContent = A.oneShot('nilla');
+      function copy(id, btn) {
+        var t = document.getElementById(id)?.innerText || '';
+        navigator.clipboard.writeText(t).then(function () {
+          if (btn) btn.textContent = 'Copied';
+        }).catch(function () {});
+      }
+      document.getElementById('copy-prompt')?.addEventListener('click', function () {
+        copy('replit-prompt', this);
+      });
+      document.getElementById('copy-debug')?.addEventListener('click', function () {
+        copy('debug-prompt', this);
+      });
+    })();
   </script>
 </body>
 </html>

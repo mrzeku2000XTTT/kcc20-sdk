@@ -20,7 +20,7 @@ Require `window.kcc20.sdkVersion >= "168"` (`buyKron` + `compileVault` + `sendKa
 - [Compact ticks + buy snippets](https://kcc20-sdk.vercel.app/tokens.json)
 - [Human Tokens tab](https://kcc20-sdk.vercel.app/tokens.html)
 - [API docs](https://kcc20-sdk.vercel.app/docs.html)
-- [Nilla / signPskt](https://kcc20-sdk.vercel.app/nilla.html)
+- [Nilla Gorilla one-shot (intent → Argent → SCORPION)](https://kcc20-sdk.vercel.app/nilla.html#prompt)
 - [Argent vault compiler](https://kcc20-sdk.vercel.app/argent.html)
 - [Argent one-shot prompts](https://kcc20-sdk.vercel.app/argent.html#prompts)
 - [Tap2Tip / Base44 buyKron](https://kcc20-sdk.vercel.app/taptotip.html)
