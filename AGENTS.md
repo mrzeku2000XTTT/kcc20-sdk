@@ -51,4 +51,5 @@ System prompt: `kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt())` — nev
 - “Send to grandson” is type `send` (plain transfer). Ask for amount + his `kaspa:q`. Time Capsule returns to the **owner**, not him.
 - Dead-man / heir → `compileVault({ type:'sentinel', params:{ amountKas, lockMinutes, beneficiary } })`.
 - Pay now → `sendKas({ dest, amount })`.
+- Debit-card KAS: `quoteOnramp({ usd, dest })` (5 min). You charge the card. Then treasury `sendKas(onrampFaucet(q))` or `compileVault(onrampCompile(q))` (hashlock). Prompt: `oneShot('onramp')`.
 - LLM director prompt: `kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt())`. The LLM directs; Argent in the PWA compiles.

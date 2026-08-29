@@ -95,6 +95,21 @@ Local parse needs **no** Connect. Compile/send opens the PWA.
 
 Types: `send` · `timelock` · `life` · `escrow` · `multisig` · `kcc20lock` · `sentinel` · `recurring` · `hashlock` · `xmss`
 
+## Card → KAS (5-minute quote)
+
+Argent does **not** charge debit cards. Your Base44/Stripe POS does. After `paid=true`:
+
+```js
+const q = await kcc20Argent.quoteOnramp({ usd: 20, dest: buyerKaspaQ }); // 5 min
+if (!kcc20Argent.quoteValid(q)) throw new Error('expired');
+// FAST: treasury chip
+await kcc.sendKas(kcc20Argent.onrampFaucet(q));
+// or lock inventory first:
+await kcc.compileVault(kcc20Argent.onrampCompile(q)); // hashlock, 5 min, receiver=buyer
+```
+
+Prompt: [argent.html#shot-onramp](https://kcc20-sdk.vercel.app/argent.html#shot-onramp) · `oneShot('onramp')`.
+
 Aliases (so a dead-man never becomes a Time Capsule): `deadman` / `dead man switch` / `dms` → `sentinel`. `Time Capsule` / `capsule` → `timelock`. Use `kcc20Argent.normalizeVaultType('deadman switch') === 'sentinel'`. Pass `compileVault({ type: 'sentinel', params: { amountKas, lockMinutes, beneficiary } })`. A message that says dead-man **wins** over a default `type: 'timelock'`.
 
 `argent.intentSchema()` returns the JSON Schema. `argent.PRODUCTS` is the catalog (compiler function + repo path).

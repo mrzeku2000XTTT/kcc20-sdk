@@ -21,6 +21,8 @@
    - xmss            real post-quantum vault from kaspa-xmss-covenants/covenants/xmsslock.
                      Keys from keygen/xmss_keygen.py offline. Wallet only funds P2SH + broadcasts witness.
    - kcc20lock       freeze a KCC20 bag until a date (same CLTV as Time Capsule).
+   - onramp          5-min KAS/USD quote + POS (you integrate Stripe/etc). After card success,
+                     treasury sendKas to buyer OR hashlock (5 min) receiver=buyer. We do not process cards.
 
    Repo: https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants
    Wallet: https://kcc-20-wallet.vercel.app  (Vault tab + Argent orb)
@@ -32,7 +34,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  var VERSION = '1.1.2';
+  var VERSION = '1.2.0';
   var WALLET = 'https://kcc-20-wallet.vercel.app';
   var REPO = 'https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants';
   var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=168';
@@ -815,13 +817,112 @@
     return out;
   }
 
+  var QUOTE_MS = 5 * 60 * 1000;
+  var PRICE_URLS = [
+    'https://api.coingecko.com/api/v3/simple/price?ids=kaspa&vs_currencies=usd',
+    'https://api.coinpaprika.com/v1/tickers/kas-kaspa'
+  ];
+
+  function quoteId() {
+    return 'q_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+  }
+
+  function quoteFromPrice(opts) {
+    var usd = Number(opts && opts.usd);
+    var usdPerKas = Number(opts && opts.usdPerKas);
+    var dest = (opts && opts.dest) ? String(opts.dest).toLowerCase() : '';
+    var windowMs = Number(opts && opts.windowMs) > 0 ? Number(opts.windowMs) : QUOTE_MS;
+    if (!(usd > 0)) throw new Error('Enter a USD amount greater than 0');
+    if (!(usdPerKas > 0)) throw new Error('Need a live KAS/USD price');
+    if (dest && !parseAddress(dest)) throw new Error('Buyer dest must be a full kaspa:q address');
+    var kas = usd / usdPerKas;
+    var kasAmount = Math.floor(kas * 1e8) / 1e8;
+    if (!(kasAmount > 0)) throw new Error('USD amount is too small for one sompi of KAS');
+    var now = Date.now();
+    return {
+      quoteId: (opts && opts.quoteId) || quoteId(),
+      usd: usd,
+      usdPerKas: usdPerKas,
+      kasAmount: kasAmount,
+      dest: dest || '',
+      windowMs: windowMs,
+      windowMinutes: windowMs / 60000,
+      createdAt: now,
+      expiresAt: now + windowMs,
+      source: (opts && opts.source) || 'manual',
+      fact: 'Quote is live for 5 minutes. Card POS is YOUR Stripe/Base44 payment — Argent does not charge cards. After paid=true, treasury sendKas or hashlock claim to dest.'
+    };
+  }
+
+  function quoteValid(q) {
+    if (!q || !(Number(q.kasAmount) > 0) || !(Number(q.usd) > 0)) return false;
+    return Date.now() < Number(q.expiresAt);
+  }
+
+  function fetchJson(url) {
+    return fetch(url, { headers: { Accept: 'application/json' } }).then(function (r) {
+      if (!r.ok) throw new Error('price HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function quoteKasUsd() {
+    return fetchJson(PRICE_URLS[0]).then(function (j) {
+      var p = j && j.kaspa && Number(j.kaspa.usd);
+      if (!(p > 0)) throw new Error('CoinGecko gave no kaspa.usd');
+      return { usdPerKas: p, source: 'coingecko' };
+    }).catch(function () {
+      return fetchJson(PRICE_URLS[1]).then(function (j) {
+        var p = j && j.quotes && j.quotes.USD && Number(j.quotes.USD.price);
+        if (!(p > 0)) throw new Error('No KAS/USD from backup oracle');
+        return { usdPerKas: p, source: 'coinpaprika' };
+      });
+    });
+  }
+
+  function quoteOnramp(opts) {
+    opts = opts || {};
+    return quoteKasUsd().then(function (px) {
+      return quoteFromPrice({
+        usd: opts.usd,
+        dest: opts.dest,
+        usdPerKas: px.usdPerKas,
+        source: px.source,
+        windowMs: opts.windowMs
+      });
+    });
+  }
+
+  function onrampCompile(quote) {
+    if (!quoteValid(quote)) throw new Error('Quote expired. Fetch a new 5-minute price.');
+    if (!parseAddress(quote.dest)) throw new Error('Need buyer kaspa:q before compiling the faucet lock');
+    return {
+      type: 'hashlock',
+      params: {
+        amountKas: quote.kasAmount,
+        lockMinutes: Math.max(1, Math.round(quote.windowMinutes || 5)),
+        durationLabel: '5 minute on-ramp window',
+        receiver: quote.dest,
+        quoteId: quote.quoteId,
+        usd: quote.usd,
+        usdPerKas: quote.usdPerKas
+      }
+    };
+  }
+
+  function onrampFaucet(quote) {
+    if (!quoteValid(quote)) throw new Error('Quote expired. Do not send. Fetch a new quote.');
+    if (!parseAddress(quote.dest)) throw new Error('Need buyer kaspa:q');
+    return { dest: quote.dest, amount: String(quote.kasAmount), amountKas: String(quote.kasAmount), quoteId: quote.quoteId };
+  }
+
   function oneShot(id) {
     var all = oneShots();
     return all[id] || all.director;
   }
 
   function oneShots() {
-    var load = 'Load ONLY on a Connect click path:\n  <script src="' + SDK + '"></script>\n  <script src="https://kcc20-sdk.vercel.app/argent.js"></script>\nRequire window.kcc20.sdkVersion >= "168". Wallet BUILD 177+. Origin https://kcc-20-wallet.vercel.app';
+    var load = 'Load ONLY on a Connect click path:\n  <script src="' + SDK + '"></script>\n  <script src="https://kcc20-sdk.vercel.app/argent.js"></script>\nRequire window.kcc20.sdkVersion >= "168". Wallet BUILD 178+. Origin https://kcc-20-wallet.vercel.app';
     var money = [
       'Keys NEVER leave the PWA. Never ask seed, PIN, or 64-hex. Never invent a kaspa: address.',
       'SCORPION = window.kcc20. Connect only from a user click. After Approve the popup closes on purpose.',
@@ -936,6 +1037,39 @@
         'Wallet: https://kcc-20-wallet.vercel.app  BUILD 177+',
         '',
         'Done when: Connect once, type “buy 10 kas of KKDAG” → txId, type “lock 10 kas for 7 days” → compileVault kaspa:p txId, type “send 1 kas to my friend” → asks kaspa:q then sendKas txId. No .join error. No false stack on buyKron (wallet builds).'
+      ].join('\n'),
+      onramp: [
+        'Build a KAS debit-card on-ramp on Base44 / Replit. One-shot. Argent + SCORPION. YOU integrate POS (Stripe Checkout, Square, MoonPay widget). This SDK does NOT charge cards and does NOT hold keys.',
+        '',
+        load,
+        '',
+        'HONEST SPLIT:',
+        '1) Price oracle (us): 5-minute KAS/USD quote.',
+        '     const q = await window.kcc20Argent.quoteOnramp({ usd: 20, dest: buyerKaspaQ });',
+        '     q.kasAmount  q.usdPerKas  q.expiresAt  q.quoteId',
+        '     if (!window.kcc20Argent.quoteValid(q)) fetch again.',
+        '2) POS (you): Stripe/Base44 payment for q.usd. Never send PAN/CVV to KCC20. Never ask for seed.',
+        '3) After paid=true AND quoteValid(q): FAUCET KAS from the SELLER treasury chip.',
+        '     FAST PATH (default): seller Connects SCORPION, then',
+        '       await kcc.sendKas(window.kcc20Argent.onrampFaucet(q));',
+        '     COVENANT++ PATH: before card, seller compileVault the 5-min hashlock so inventory is locked to the buyer:',
+        '       await kcc.compileVault(window.kcc20Argent.onrampCompile(q));',
+        '       type is hashlock. receiver = buyer kaspa:q. lockMinutes = 5. If they do not pay, treasury Sweeps refund after 5 min.',
+        '       After POS success, buyer claims with the secret OR seller sendKas if you skipped the lock.',
+        '',
+        'WHO GETS WHAT:',
+        '- Buyer: KAS lands on their kaspa:q (SCORPION address they pasted / Connect).',
+        '- Seller: USD/card funds land in YOUR Stripe/POS (not on Kaspa). KAS leaves their treasury wallet.',
+        '- If treasury has no KAS, refuse the quote. Check getBalance first. Do not compile an empty faucet.',
+        '',
+        'UI: USD input, live KAS amount, 5:00 countdown, dest kaspa:q, Pay with card (your POS), then Show txId.',
+        'Connect SCORPION on a click. Two chips: Buyer (receive) and Treasury/seller (must hold KAS).',
+        '',
+        money,
+        '',
+        'Dead-man is sentinel, not this. Time Capsule is not an on-ramp (returns to owner).',
+        'Docs: https://kcc20-sdk.vercel.app/argent.html#shot-onramp',
+        'Done when: quote 20 USD → ~KAS for 5 min, fake/test POS success, treasury sendKas to buyer txId, expired quote refuses send.'
       ].join('\n')
     };
   }
@@ -1003,6 +1137,12 @@
     llmDirectorPrompt: llmDirectorPrompt,
     oneShot: oneShot,
     oneShots: oneShots,
+    quoteKasUsd: quoteKasUsd,
+    quoteFromPrice: quoteFromPrice,
+    quoteOnramp: quoteOnramp,
+    quoteValid: quoteValid,
+    onrampCompile: onrampCompile,
+    onrampFaucet: onrampFaucet,
     grandsonExample: grandsonExample
   };
 });

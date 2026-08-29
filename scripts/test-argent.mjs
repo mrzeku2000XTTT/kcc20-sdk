@@ -79,6 +79,18 @@ ok('deadman + due date stays sentinel', dmsDue.type === 'sentinel');
 const forced = A.parseIntent('deadman switch lock 10 kas for 7 days', { type: 'timelock', params: { amountKas: 10 } });
 ok('message sentinel beats prev timelock', forced.type === 'sentinel');
 
+const buyDest = 'kaspa:qrtfjhwty4jp0p5203luswhscl63t4lt0aptgz5dezwjkuk2kteyxu7q4sax6';
+const q = A.quoteFromPrice({ usd: 20, usdPerKas: 0.05, dest: buyDest });
+ok('quote kas = usd/price', q.kasAmount === 400);
+ok('quote valid 5 min', A.quoteValid(q) && (q.expiresAt - q.createdAt) === 5 * 60 * 1000);
+const onrampLock = A.onrampCompile(q);
+ok('onramp compiles hashlock 5 min to buyer', onrampLock.type === 'hashlock' && onrampLock.params.receiver === buyDest && onrampLock.params.lockMinutes === 5);
+const faucet = A.onrampFaucet(q);
+ok('onramp faucet sendKas dest', faucet.dest === buyDest && String(faucet.amount) === '400');
+const dead = Object.assign({}, q, { expiresAt: Date.now() - 1 });
+ok('expired quote rejected', A.quoteValid(dead) === false);
+ok('oneShot onramp mentions Stripe and sendKas', /Stripe/i.test(A.oneShot('onramp')) && /sendKas/i.test(A.oneShot('onramp')) && /hashlock/i.test(A.oneShot('onramp')));
+
 if (process.exitCode) {
   console.error('argent tests failed');
   process.exit(1);

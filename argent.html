@@ -50,6 +50,7 @@
       <a href="#shot-scorpion" data-pane="prompts">Scorpion agent</a>
       <a href="#shot-vibe" data-pane="prompts">Vibe economics</a>
       <a href="#shot-llm" data-pane="prompts">LLM system prompt</a>
+      <a href="#shot-onramp" data-pane="prompts">Card → KAS on-ramp</a>
     </aside>
     <main>
       <div class="page-tabs" id="argent-tabs">
@@ -221,6 +222,15 @@ else {
         </div>
         <pre class="copy-box" id="pre-llm">Loading…</pre>
       </section>
+
+      <section class="doc-sec" id="shot-onramp" data-keywords="onramp debit card Stripe quote 5 minute hashlock faucet treasury">
+        <h2>5. Card → KAS on-ramp (you add POS)</h2>
+        <p>5-minute CoinGecko quote. You charge the card (Stripe / Base44). After <code>paid=true</code>, treasury <code>sendKas</code> or Argent <code>hashlock</code> (5 min, receiver = buyer). We never see the card.</p>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" data-copy="onramp">Copy this prompt</button>
+        </div>
+        <pre class="copy-box" id="pre-onramp">Loading…</pre>
+      </section>
       </div>
     </main>
   </div>
@@ -235,7 +245,7 @@ else {
         if (id === 'llm') return A.promptText(A.llmDirectorPrompt());
         return shots[id] || A.oneShot(id) || '';
       }
-      ['director', 'scorpion', 'vibe', 'llm'].forEach(function (id) {
+      ['director', 'scorpion', 'vibe', 'llm', 'onramp'].forEach(function (id) {
         var el = document.getElementById('pre-' + id);
         if (el) el.textContent = textOf(id);
       });
@@ -268,7 +278,7 @@ else {
           }).catch(function () {});
         });
       });
-      if (/prompt|shot-|scorpion|vibe|director/i.test(location.hash || '')) showPane('prompts');
+      if (/prompt|shot-|scorpion|vibe|director|onramp|card/i.test(location.hash || '')) showPane('prompts');
     })();
   </script>
 </body>
