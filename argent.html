@@ -52,6 +52,7 @@
       <a href="#shot-llm" data-pane="prompts">LLM system prompt</a>
       <a href="#shot-onramp" data-pane="prompts">Card → KAS on-ramp</a>
       <a href="#shot-base44" data-pane="prompts">Base44 on-ramp (honest)</a>
+      <a href="#shot-changenow" data-pane="prompts">ChangeNOW USDC→KAS</a>
     </aside>
     <main>
       <div class="page-tabs" id="argent-tabs">
@@ -241,6 +242,15 @@ else {
         </div>
         <pre class="copy-box" id="pre-base44Onramp">Loading…</pre>
       </section>
+
+      <section class="doc-sec" id="shot-changenow" data-keywords="ChangeNOW USDC KAS floating widget payin">
+        <h2>7. ChangeNOW — USDC/USDT → KAS (floating)</h2>
+        <p>User sends USDC to ChangeNOW. KAS pays out to their SCORPION <code>kaspa:q</code>. Not a vault. Not a card.</p>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" data-copy="changenow">Copy this prompt</button>
+        </div>
+        <pre class="copy-box" id="pre-changenow">Loading…</pre>
+      </section>
       </div>
     </main>
   </div>
@@ -255,7 +265,7 @@ else {
         if (id === 'llm') return A.promptText(A.llmDirectorPrompt());
         return shots[id] || A.oneShot(id) || '';
       }
-      ['director', 'scorpion', 'vibe', 'llm', 'onramp', 'base44Onramp'].forEach(function (id) {
+      ['director', 'scorpion', 'vibe', 'llm', 'onramp', 'base44Onramp', 'changenow'].forEach(function (id) {
         var el = document.getElementById('pre-' + id);
         if (el) el.textContent = textOf(id);
       });

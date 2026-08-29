@@ -118,6 +118,17 @@ That KAS is then a normal P2PK output: **only the buyer’s address can spend it
 
 Prompt: [argent.html#shot-onramp](https://kcc20-sdk.vercel.app/argent.html#shot-onramp) · `oneShot('onramp')`.
 
+## ChangeNOW USDC → KAS (floating)
+
+Not a vault. User sends USDC to ChangeNOW; KAS pays out to their SCORPION `kaspa:q`.
+
+```js
+const swap = await kcc20Argent.changenowIntent({ from: 'usdc', amount: 20, dest: accounts[0] });
+// widget: swap.tx.widgetUrl   API (partner key): swap.tx.payinAddress
+```
+
+Prompt: [argent.html#shot-changenow](https://kcc20-sdk.vercel.app/argent.html#shot-changenow) · `oneShot('changenow')`. Optional `CHANGENOW_API_KEY` / `localStorage.kcc20_changenow_key`.
+
 Aliases (so a dead-man never becomes a Time Capsule): `deadman` / `dead man switch` / `dms` → `sentinel`. `Time Capsule` / `capsule` → `timelock`. Use `kcc20Argent.normalizeVaultType('deadman switch') === 'sentinel'`. Pass `compileVault({ type: 'sentinel', params: { amountKas, lockMinutes, beneficiary } })`. A message that says dead-man **wins** over a default `type: 'timelock'`.
 
 `argent.intentSchema()` returns the JSON Schema. `argent.PRODUCTS` is the catalog (compiler function + repo path).

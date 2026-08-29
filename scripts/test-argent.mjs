@@ -96,6 +96,9 @@ ok('onrampFlow has signing treasury step', A.onrampFlow()[0].do.indexOf('SIGNING
 ok('base44 prompt is onramp escrow', /compileVault/i.test(A.oneShot('base44Onramp')) && /onramp/i.test(A.oneShot('base44Onramp')));
 ok('card sale alias', A.normalizeVaultType('card sale') === 'onramp');
 ok('parse card sale is onramp', A.parseIntent('card sale 10 kas for 5 minutes to kaspa:qrtfjhwty4jp0p5203luswhscl63t4lt0aptgz5dezwjkuk2kteyxu7q4sax6').type === 'onramp');
+ok('cn ticker usdc is usdcerc20', A.changenowTicker('usdc').v1 === 'usdcerc20');
+ok('cn widget to kas', /to=kas/.test(A.changenowWidgetUrl({ address: buyDest })) && /toAddress=/.test(A.changenowWidgetUrl({ address: buyDest })));
+ok('oneShot changenow uses intent dest', /changenowIntent/.test(A.oneShot('changenow')));
 
 if (process.exitCode) {
   console.error('argent tests failed');

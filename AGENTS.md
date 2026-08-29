@@ -52,4 +52,5 @@ System prompt: `kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt())` — nev
 - Dead-man / heir → `compileVault({ type:'sentinel', params:{ amountKas, lockMinutes, beneficiary } })`.
 - Pay now → `sendKas({ dest, amount })`.
 - Debit-card KAS: `quoteOnramp({ usd, dest })` (5 min). You charge the card. Then treasury `sendKas(onrampFaucet(q))` or `compileVault(onrampCompile(q))` (hashlock). Prompt: `oneShot('onramp')`.
+- USDC/USDT → KAS via ChangeNOW (floating): `changenowIntent({ from:'usdc', amount:20, dest })`. Widget or payinAddress. Prompt: `oneShot('changenow')`. Not compileVault.
 - LLM director prompt: `kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt())`. The LLM directs; Argent in the PWA compiles.

@@ -961,6 +961,187 @@
     ];
   }
 
+  var CN_BASE = 'https://api.changenow.io';
+  var CN_WIDGET = 'https://changenow.io/embeds/exchange-widget/v2/widget.html';
+
+  function cnTicker(raw) {
+    var s = String(raw || 'usdc').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (s === 'kas' || s === 'kaspa') return { currency: 'kas', network: 'kaspa', v1: 'kas' };
+    if (s === 'usdcerc20' || s === 'usdceth' || s === 'usdce') return { currency: 'usdc', network: 'eth', v1: 'usdcerc20' };
+    if (s === 'usdttrc20' || s === 'usdttrc' || s === 'usdttron') return { currency: 'usdt', network: 'trx', v1: 'usdttrc20' };
+    if (s === 'usdtbsc' || s === 'usdtbep20') return { currency: 'usdt', network: 'bsc', v1: 'usdtbsc' };
+    if (s === 'usdterc20' || s === 'usdteth' || s === 'usdt') return { currency: 'usdt', network: 'eth', v1: 'usdterc20' };
+    if (s === 'usdc' || s === 'usd') return { currency: 'usdc', network: 'eth', v1: 'usdcerc20' };
+    if (s === 'eth' || s === 'ethereum') return { currency: 'eth', network: 'eth', v1: 'eth' };
+    if (s === 'btc' || s === 'bitcoin') return { currency: 'btc', network: 'btc', v1: 'btc' };
+    return { currency: s, network: '', v1: s };
+  }
+
+  function changenowApiKey(explicit) {
+    if (explicit) return String(explicit);
+    try {
+      if (typeof window !== 'undefined' && window.CHANGENOW_API_KEY) return String(window.CHANGENOW_API_KEY);
+    } catch (e) {}
+    try {
+      if (typeof localStorage !== 'undefined') return localStorage.getItem('kcc20_changenow_key') || '';
+    } catch (e2) {}
+    return '';
+  }
+
+  function changenowWidgetUrl(opts) {
+    opts = opts || {};
+    var from = cnTicker(opts.from || 'usdc');
+    var to = cnTicker(opts.to || 'kas');
+    var amt = opts.amount != null ? String(opts.amount) : '20';
+    var dest = String(opts.address || opts.dest || '').trim();
+    var q = [
+      'FAQ=false',
+      'darkMode=true',
+      'backgroundColor=0B0B0C',
+      'primaryColor=C9A36A',
+      'logo=false',
+      'locales=false',
+      'horizontal=false',
+      'lang=en-US',
+      'from=' + encodeURIComponent(from.v1 || from.currency),
+      'to=' + encodeURIComponent(to.v1 || to.currency),
+      'amount=' + encodeURIComponent(amt)
+    ];
+    if (dest) q.push('toAddress=' + encodeURIComponent(dest));
+    if (opts.linkId) q.push('link_id=' + encodeURIComponent(opts.linkId));
+    return CN_WIDGET + '?' + q.join('&');
+  }
+
+  function changenowMin(opts) {
+    opts = opts || {};
+    var from = cnTicker(opts.from || 'usdc');
+    var to = cnTicker(opts.to || 'kas');
+    var url = CN_BASE + '/v1/min-amount/' + from.v1 + '_' + to.v1;
+    return fetchJson(url).then(function (j) {
+      return { min: Number(j && (j.minAmount != null ? j.minAmount : j.min)), from: from.v1, to: to.v1 };
+    });
+  }
+
+  function changenowEstimate(opts) {
+    opts = opts || {};
+    var from = cnTicker(opts.from || 'usdc');
+    var to = cnTicker(opts.to || 'kas');
+    var amount = Number(opts.amount);
+    if (!(amount > 0)) throw new Error('Enter how much you send (e.g. 20 USDC)');
+    var url = CN_BASE + '/v1/exchange-amount/' + encodeURIComponent(String(amount)) + '/' + from.v1 + '_' + to.v1 + '/';
+    return fetchJson(url).then(function (j) {
+      var estimated = Number(j && (j.estimatedAmount != null ? j.estimatedAmount : j.amount));
+      if (!(estimated > 0) && j && j.error) throw new Error(String(j.error));
+      if (!(estimated > 0)) throw new Error('ChangeNOW has no floating quote for that pair right now');
+      return {
+        from: from.v1,
+        to: to.v1,
+        fromAmount: amount,
+        toAmount: estimated,
+        flow: 'standard',
+        networkFee: j.networkFee,
+        transactionSpeedForecast: j.transactionSpeedForecast,
+        warningMessage: j.warningMessage || ''
+      };
+    });
+  }
+
+  function changenowCreate(opts) {
+    opts = opts || {};
+    var key = changenowApiKey(opts.apiKey);
+    var from = cnTicker(opts.from || 'usdc');
+    var to = cnTicker(opts.to || 'kas');
+    var amount = Number(opts.amount);
+    var address = String(opts.address || opts.dest || '').trim();
+    if (!(amount > 0)) throw new Error('Enter an amount to send');
+    if (!parseAddress(address) && to.currency === 'kas') throw new Error('Payout must be a kaspa:q receive address');
+    if (!key) {
+      return Promise.resolve({
+        mode: 'widget',
+        widgetUrl: changenowWidgetUrl({ from: from.v1, to: to.v1, amount: amount, address: address, linkId: opts.linkId }),
+        address: address,
+        from: from.v1,
+        to: to.v1,
+        fromAmount: amount,
+        fact: 'No ChangeNOW API key. User completes the swap in the widget. KAS pays out to address. Set CHANGENOW_API_KEY or localStorage kcc20_changenow_key for payinAddress API mode.'
+      });
+    }
+    var body = {
+      from: from.v1,
+      to: to.v1,
+      address: address,
+      amount: String(amount),
+      extraId: opts.extraId || '',
+      refundAddress: opts.refundAddress || '',
+      refundExtraId: opts.refundExtraId || '',
+      contactEmail: opts.contactEmail || ''
+    };
+    return fetch(CN_BASE + '/v1/transactions/' + encodeURIComponent(key), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().then(function (j) {
+        if (!r.ok || (j && j.error)) throw new Error((j && (j.message || j.error)) || ('ChangeNOW HTTP ' + r.status));
+        return {
+          mode: 'api',
+          id: j.id,
+          payinAddress: j.payinAddress,
+          payinExtraId: j.payinExtraId || '',
+          payoutAddress: j.payoutAddress || address,
+          from: j.fromCurrency || from.v1,
+          to: j.toCurrency || to.v1,
+          fromAmount: j.fromAmount || amount,
+          toAmount: j.toAmount,
+          validUntil: j.validUntil,
+          widgetUrl: changenowWidgetUrl({ from: from.v1, to: to.v1, amount: amount, address: address }),
+          statusUrl: 'https://changenow.io/exchange/txs/' + j.id,
+          fact: 'Floating (standard) rate. User sends FROM amount to payinAddress. ChangeNOW pays KAS to payoutAddress (the intent dest).'
+        };
+      });
+    });
+  }
+
+  function changenowStatus(id, apiKey) {
+    var key = changenowApiKey(apiKey);
+    if (!id) return Promise.reject(new Error('Need ChangeNOW tx id'));
+    var url = CN_BASE + '/v1/transactions/' + encodeURIComponent(id) + '/' + encodeURIComponent(key || ' ');
+    return fetchJson(url);
+  }
+
+  function changenowIntent(opts) {
+    opts = opts || {};
+    var dest = String(opts.address || opts.dest || '').trim();
+    var amount = Number(opts.amount);
+    var from = opts.from || 'usdc';
+    if (!parseAddress(dest)) {
+      return Promise.resolve({
+        kind: 'ask',
+        ask: 'Paste the kaspa:q that should receive KAS (Connect SCORPION, then we fill it).',
+        widgetUrl: changenowWidgetUrl({ from: from, to: 'kas', amount: amount || 20 })
+      });
+    }
+    return changenowEstimate({ from: from, to: 'kas', amount: amount || 20 }).then(function (est) {
+      return changenowCreate({
+        from: from,
+        to: 'kas',
+        amount: est.fromAmount,
+        address: dest,
+        apiKey: opts.apiKey,
+        refundAddress: opts.refundAddress
+      }).then(function (tx) {
+        return {
+          kind: 'swap',
+          summary: 'Send ' + est.fromAmount + ' ' + est.from + ' to ChangeNOW. They pay ~' + est.toAmount + ' KAS to ' + dest + ' (floating rate).',
+          estimate: est,
+          tx: tx,
+          dest: dest,
+          argentChat: 'changenow: send ' + est.fromAmount + ' ' + est.from + ' to ' + (tx.payinAddress || 'the widget') + ' — payout ' + dest
+        };
+      });
+    });
+  }
+
   function oneShot(id) {
     var all = oneShots();
     return all[id] || all.director;
@@ -1155,6 +1336,26 @@
         'Never ask seed/PIN/hex. Never overwrite window.kasware. never llmDirectorPrompt().join without promptText.',
         'Docs: https://kcc20-sdk.vercel.app/argent.html#shot-base44',
         'Done when: seller locks Card sale vault for buyer q; after Stripe paid, buyer claims; unpaid 5 min Sweep refunds seller.'
+      ].join('\n'),
+      changenow: [
+        'Build USDC→KAS (and USDT→KAS) via ChangeNOW floating (standard) rate inside a SCORPION / Argent app. One-shot.',
+        '',
+        load,
+        '',
+        'THIS IS NOT a card on-ramp and NOT compileVault. ChangeNOW is a swap: user sends USDC to a payin address; ChangeNOW sends KAS to their kaspa:q.',
+        '',
+        'Intent: dest = user kaspa:q (from kcc.connect()[0]). from = usdcerc20 (default) or usdterc20. amount = USDC they will send.',
+        '  const swap = await window.kcc20Argent.changenowIntent({ from: "usdc", amount: 20, dest: accounts[0] });',
+        'If swap.tx.mode === "widget": iframe or open swap.tx.widgetUrl (toAddress already set).',
+        'If swap.tx.mode === "api": show swap.tx.payinAddress + fromAmount. User sends that USDC themselves. Poll changenowStatus(id).',
+        'Optional partner key: window.CHANGENOW_API_KEY or localStorage kcc20_changenow_key (the dApp’s ChangeNOW partner key, never a wallet key).',
+        'Estimate only: await kcc20Argent.changenowEstimate({ from:"usdc", to:"kas", amount:20 })',
+        'Min: await kcc20Argent.changenowMin({ from:"usdc", to:"kas" })',
+        '',
+        'UI: From USDC, amount, live ~KAS, Receive kaspa:q, button Get pay-in / Open ChangeNOW, then status. Floating rate — amount out can move until they send.',
+        'Do not compileVault. Do not sendKas for this. User does not give you USDC keys.',
+        'Docs: https://changenow.io/en/api  Widget: changenowWidgetUrl()',
+        'Done when: Connect SCORPION, estimate 20 USDC → KAS, show where to send USDC or embed widget, payout address is the connected kaspa:q.'
       ].join('\n')
     };
   }
@@ -1231,6 +1432,14 @@
     onrampPaidMessage: onrampPaidMessage,
     onrampPaidIntent: onrampPaidIntent,
     onrampFlow: onrampFlow,
+    changenowTicker: cnTicker,
+    changenowWidgetUrl: changenowWidgetUrl,
+    changenowMin: changenowMin,
+    changenowEstimate: changenowEstimate,
+    changenowCreate: changenowCreate,
+    changenowStatus: changenowStatus,
+    changenowIntent: changenowIntent,
+    oneShotChangenow: function () { return oneShot('changenow'); },
     onrampFacts: function () {
       return {
         usdGoesTo: 'Your Stripe/Square bank account. Never Kaspa. Never Argent.',
