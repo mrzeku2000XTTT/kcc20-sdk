@@ -1213,9 +1213,11 @@
     onrampFacts: function () {
       return {
         usdGoesTo: 'Your Stripe/Square bank account. Never Kaspa. Never Argent.',
-        kasGoesTo: 'Buyer kaspa:q, sent from a signing treasury.',
+        kasGoesTo: 'Buyer kaspa:q only AFTER sendKas confirms, or AFTER they claim a hashlock. A lock (kaspa:p) is not yet theirs.',
         treasury: 'Must sign (native PIN or KasWare). Watch-only cannot compileVault or sendKas.',
-        noPos: 'If you did not connect a real POS, there is no $1 to withdraw.'
+        noPos: 'If you did not connect a real POS, there is no $1 to withdraw.',
+        scriptCannotSeeDollars: 'Argent cannot compile “if they paid $1 then send”. Stripe is off-chain. App detects paid, then seller PIN-sends (or buyer claims hashlock).',
+        faucetMeans: 'One paid order → one quote → one dest → one seller signature. Not a vault that pays any future buyer by itself.'
       };
     },
     grandsonExample: grandsonExample
