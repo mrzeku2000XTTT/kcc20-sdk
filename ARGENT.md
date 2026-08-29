@@ -97,6 +97,15 @@ Types: `send` · `timelock` · `life` · `escrow` · `multisig` · `kcc20lock` �
 
 ## Card → KAS (5-minute quote)
 
+Two rails. Do not mix them.
+
+| Rail | Where the money is | Who can move it |
+|---|---|---|
+| **$1 card** | Your Stripe/Square **bank payout**. Never in KCC20. | Only the POS. Argent cannot withdraw USD. No POS = no $1. |
+| **KAS** | Seller treasury `kaspa:q` → buyer `kaspa:q` | Only a **signing** treasury (PIN hex or KasWare). Watch-only cannot send or compile. |
+
+Covenants attach when the treasury **signs the fund tx**. You cannot pre-write rules onto a read-only address. Create/import a real key, fund KAS, then `compileVault` / `sendKas` from that chip.
+
 Argent does **not** charge debit cards. Your Base44/Stripe POS does. After `paid=true`:
 
 ```js

@@ -1057,13 +1057,18 @@
         '       type is hashlock. receiver = buyer kaspa:q. lockMinutes = 5. If they do not pay, treasury Sweeps refund after 5 min.',
         '       After POS success, buyer claims with the secret OR seller sendKas if you skipped the lock.',
         '',
-        'WHO GETS WHAT:',
-        '- Buyer: KAS lands on their kaspa:q (SCORPION address they pasted / Connect).',
-        '- Seller: USD/card funds land in YOUR Stripe/POS (not on Kaspa). KAS leaves their treasury wallet.',
-        '- If treasury has no KAS, refuse the quote. Check getBalance first. Do not compile an empty faucet.',
+        'WHO GETS WHAT — two different rails, never mixed:',
+        '- $1 from the card goes to YOUR Stripe/Square BANK (payouts). It never appears in KCC20. Argent cannot withdraw USD. If you did not connect a real POS with a bank, there is NO $1 — do not fake a Pay button.',
+        '- KAS leaves the SELLER treasury kaspa:q and lands on the BUYER kaspa:q. That is the only on-chain move.',
+        '',
+        'TREASURY CANNOT BE READ-ONLY / WATCH-ONLY.',
+        'compileVault and sendKas need a signing chip: native 64-hex + PIN, or KasWare that can sign that address.',
+        'Setup (once, seller): Create wallet in KCC20 (not watch-only) → fund it with the KAS you will sell → Connect THAT chip as treasury.',
+        'Then either (a) sendKas on each paid webhook, or (b) compileVault hashlock FROM that same signing treasury (rules attach when it SIGNS the fund tx). A read-only address cannot write a covenant. Viewing a kaspa:p later is fine; funding it is not.',
+        'If getPublicKey / sign throws “no native signing key”, stop. Import the hex or turn KasWare on. Do not use the ews treasury chip unless you own it.',
         '',
         'UI: USD input, live KAS amount, 5:00 countdown, dest kaspa:q, Pay with card (your POS), then Show txId.',
-        'Connect SCORPION on a click. Two chips: Buyer (receive) and Treasury/seller (must hold KAS).',
+        'Connect SCORPION on a click. Two chips: Buyer (receive, can be watch) and Treasury/seller (MUST sign + hold KAS).',
         '',
         money,
         '',
@@ -1143,6 +1148,14 @@
     quoteValid: quoteValid,
     onrampCompile: onrampCompile,
     onrampFaucet: onrampFaucet,
+    onrampFacts: function () {
+      return {
+        usdGoesTo: 'Your Stripe/Square bank account. Never Kaspa. Never Argent.',
+        kasGoesTo: 'Buyer kaspa:q, sent from a signing treasury.',
+        treasury: 'Must sign (native PIN or KasWare). Watch-only cannot compileVault or sendKas.',
+        noPos: 'If you did not connect a real POS, there is no $1 to withdraw.'
+      };
+    },
     grandsonExample: grandsonExample
   };
 });
