@@ -53,4 +53,5 @@ System prompt: `kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt())` — nev
 - Pay now → `sendKas({ dest, amount })`.
 - Debit-card KAS: `quoteOnramp({ usd, dest })` (5 min). You charge the card. Then treasury `sendKas(onrampFaucet(q))` or `compileVault(onrampCompile(q))` (hashlock). Prompt: `oneShot('onramp')`.
 - USDC/USDT → KAS via ChangeNOW (floating): `changenowIntent({ from:'usdc', amount:20, dest })`. Widget or payinAddress. Prompt: `oneShot('changenow')`. Not compileVault.
+- SilverScript v1-rc1 (official Kaspa `.sil` compiler): load `silverscript.js`. Parse `silverc` JSON, `compileVault({ type:'silverscript', params:{ amountKas, artifact } })`. Argent does **not** compile `.sil`. Prompt: `oneShot('silverscript')`. Docs: `SILVERSCRIPT.md`.
 - LLM director prompt: `kcc20Argent.promptText(kcc20Argent.llmDirectorPrompt())`. The LLM directs; Argent in the PWA compiles.

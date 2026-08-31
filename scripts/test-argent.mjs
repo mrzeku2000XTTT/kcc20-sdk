@@ -55,6 +55,12 @@ ok('rent is life', rent.type === 'life' && rent.params.lifeKind === 'rent');
 
 ok('prompt mentions grandson and Time Capsule owner', /grandson/i.test(A.promptText(A.llmDirectorPrompt())) && /OWNER/i.test(A.promptText(A.llmDirectorPrompt())));
 ok('schema has send+sentinel+xmss', A.intentSchema().properties.type.enum.indexOf('send') >= 0 && A.intentSchema().properties.type.enum.indexOf('xmss') >= 0);
+ok('schema has silverscript', A.intentSchema().properties.type.enum.indexOf('silverscript') >= 0);
+ok('oneShot silverscript mentions silverc', /silverc/i.test(A.oneShot('silverscript')) && /does NOT compile \.sil/i.test(A.oneShot('silverscript')));
+ok('alias silverc → silverscript', A.normalizeVaultType('silverc') === 'silverscript');
+const silTalk = A.parseIntent('silverscript lock 10 kas');
+ok('silverscript phrase is type silverscript', silTalk.type === 'silverscript');
+ok('silverscript asks for artifact', (silTalk.missing || []).some(m => /silverc|artifact|\.sil/i.test(m)));
 ok('llmDirectorPrompt().join works', typeof A.llmDirectorPrompt().join === 'function');
 ok('promptText unwraps join', A.promptText(A.llmDirectorPrompt().join('\n')).indexOf('grandson') >= 0);
 ok('promptText on string', A.promptText('hello') === 'hello');

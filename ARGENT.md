@@ -93,7 +93,20 @@ Local parse needs **no** Connect. Compile/send opens the PWA.
 }
 ```
 
-Types: `send` · `timelock` · `life` · `escrow` · `multisig` · `kcc20lock` · `sentinel` · `recurring` · `hashlock` · `xmss`
+Types: `send` · `timelock` · `life` · `escrow` · `multisig` · `kcc20lock` · `sentinel` · `recurring` · `hashlock` · `xmss` · `silverscript`
+
+### SilverScript (kaspanet v1-rc1)
+
+Official Kaspa high-level covenant language. **Argent does not compile `.sil`.** Compile with `silverc`, then:
+
+```js
+<script src="https://kcc20-sdk.vercel.app/silverscript.js"></script>
+const sil = window.kcc20Silver;
+const artifact = sil.parse(jsonFromSilverc);
+await kcc.compileVault(sil.compileVaultPayload({ artifact, amountKas: 10 }));
+```
+
+Spend: `sil.encodeEntry(artifact, 'Contract', 'entry', args)` → P2SH signature script (KCC-01 tag). See [SILVERSCRIPT.md](SILVERSCRIPT.md) and [oneShot('silverscript')](https://kcc20-sdk.vercel.app/argent.html#shot-silverscript).
 
 ## Card → KAS (5-minute quote)
 

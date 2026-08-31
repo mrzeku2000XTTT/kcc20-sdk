@@ -1,0 +1,20 @@
+pragma silverscript ^1.0.0;
+
+// silverc TransferWithTimeout.sil --constructor-args args.json
+// args.json: [ {"kind":"bytes","value":[...32 sender pubkey...]}, {"kind":"bytes","value":[...32 recipient...]}, {"kind":"int","value":1735689600000} ]
+// Then: kcc20Silver.parse(contract.json) → compileVault({ type:'silverscript', params:{ amountKas, artifact } })
+
+contract TransferWithTimeout(
+    pubkey sender,
+    pubkey recipient,
+    temporal timeout
+) {
+    entry transfer(sig recipientSig) {
+        require(checkSig(recipientSig, recipient));
+    }
+
+    entry reclaim(sig senderSig) {
+        require(checkSig(senderSig, sender));
+        require(tx.time >= timeout);
+    }
+}

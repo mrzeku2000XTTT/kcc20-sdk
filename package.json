@@ -9,6 +9,8 @@
   "files": [
     "sdk.js",
     "argent.js",
+    "silverscript.js",
+    "SILVERSCRIPT.md",
     "ARGENT.md",
     "CONNECT.md",
     "llms.txt",
@@ -42,6 +44,6 @@
   ],
   "license": "MIT",
   "scripts": {
-    "test": "node --check sdk.js && node --check argent.js && node scripts/test-argent.mjs"
+    "test": "node --check sdk.js && node --check argent.js && node --check silverscript.js && node scripts/test-argent.mjs && node scripts/test-silverscript.mjs"
   }
 }

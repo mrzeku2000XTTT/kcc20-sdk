@@ -34,7 +34,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  var VERSION = '1.2.0';
+  var VERSION = '1.3.0';
   var WALLET = 'https://kcc-20-wallet.vercel.app';
   var REPO = 'https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants';
   var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=168';
@@ -70,6 +70,7 @@
     { id: 'hashlock', group: 'quantum', name: 'Secret lock', type: 'hashlock', compiler: 'buildHashlockCovenant', repo: 'wallet/js/tx.js', returnsTo: 'receiver with preimage, else sender after timer', why: 'Claim with a secret, or refund when time is up.' },
     { id: 'onramp', group: 'simple', name: 'Card sale', type: 'onramp', compiler: 'buildHashlockCovenant (5 min, receiver = buyer)', repo: 'wallet/js/tx.js hashlock', returnsTo: 'buyer after they claim; else seller refund', why: 'On-ramp escrow. Seller locks quoted KAS. Buyer claims after card pay. Unpaid refunds in 5 min.' },
     { id: 'xmss', group: 'quantum', name: 'XMSS vault', type: 'xmss', compiler: 'p2shFromRedeemHex(public kit)', repo: 'covenants/xmsslock + keygen/xmss_keygen.py + xmss_sign.py', returnsTo: 'whoever the witness spends to', why: 'Real post-quantum vault. Paste a PUBLIC kit. Never the private JSON. Spend needs ~0.32 KAS extra.' },
+    { id: 'silverscript', group: 'quantum', name: 'SilverScript artifact', type: 'silverscript', compiler: 'p2shFromRedeemHex(silverc bytecode)', repo: 'kaspanet/silverscript v1-rc1 + wallet/js/silverscript.js', returnsTo: 'whoever the chosen entry spends to', why: 'Official Kaspa covenant language. Compile .sil with silverc, paste the JSON artifact. Argent does not compile .sil. KCC-01 dispatch on spend.' },
     { id: 'send', group: 'simple', name: 'Send KAS', type: 'send', compiler: 'sendKas', repo: null, returnsTo: 'destination', why: 'Plain transfer. Not a P2SH vault. Argent only routes this; it does not compile a covenant.' }
   ];
 
@@ -98,7 +99,7 @@
     transfert: 'transfer'
   };
 
-  var KNOWN = ['lock', 'freeze', 'send', 'pay', 'escrow', 'multisig', 'sentinel', 'capsule', 'minutes', 'hours', 'days', 'kas', 'kkdag', 'kron', 'kpulse', 'vault', 'hold', 'rent', 'until', 'due', 'save', 'sale', 'onramp', 'deadman', 'card'];
+  var KNOWN = ['lock', 'freeze', 'send', 'pay', 'escrow', 'multisig', 'sentinel', 'capsule', 'minutes', 'hours', 'days', 'kas', 'kkdag', 'kron', 'kpulse', 'vault', 'hold', 'rent', 'until', 'due', 'save', 'sale', 'onramp', 'deadman', 'card', 'silverscript', 'silverc'];
 
   function num(raw) {
     if (raw == null) return null;
@@ -249,7 +250,7 @@
     return { value: value, unit: unit, days: days, minutes: minutes, label: value + ' ' + unit };
   }
 
-  var HARD_TYPES = { send: 1, sentinel: 1, escrow: 1, multisig: 1, recurring: 1, hashlock: 1, onramp: 1, xmss: 1, kcc20lock: 1 };
+  var HARD_TYPES = { send: 1, sentinel: 1, escrow: 1, multisig: 1, recurring: 1, hashlock: 1, onramp: 1, xmss: 1, silverscript: 1, kcc20lock: 1 };
 
   function normalizeVaultType(raw) {
     var s = String(raw || '').toLowerCase().replace(/[_/]+/g, ' ').replace(/['’]/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
@@ -267,7 +268,8 @@
       recurring: 'recurring', subscription: 'recurring', x402: 'recurring', 'pay on a timer': 'recurring',
       hashlock: 'hashlock', 'hash lock': 'hashlock', htlc: 'hashlock', 'secret lock': 'hashlock',
       onramp: 'onramp', 'on ramp': 'onramp', 'card sale': 'onramp', cardsale: 'onramp', 'debit card': 'onramp',
-      xmss: 'xmss', 'xmss vault': 'xmss'
+      xmss: 'xmss', 'xmss vault': 'xmss',
+      silverscript: 'silverscript', silverc: 'silverscript', 'silver script': 'silverscript', 'sil artifact': 'silverscript'
     };
     if (exact[s]) return exact[s];
     if (/dead\s*mans?|deadmanswitch|sentinel|\bdms\b|\bheir\b|check\s*in/.test(s)) return 'sentinel';
@@ -277,6 +279,7 @@
     if (/on\s*ramp|card\s*sale|debit\s*card/.test(s)) return 'onramp';
     if (/hash\s*lock|htlc/.test(s)) return 'hashlock';
     if (/xmss|post\s*quantum/.test(s)) return 'xmss';
+    if (/silver\s*script|silverc|\.sil\b/.test(s)) return 'silverscript';
     if (/recurring|x402/.test(s)) return 'recurring';
     if (/kcc20\s*freeze|freeze tokens/.test(s)) return 'kcc20lock';
     return s.replace(/\s+/g, '');
@@ -306,6 +309,7 @@
     if (/\b(recurring|subscription|x402)\b/.test(t)) return 'recurring';
     if (/\b(hash\s*lock|htlc|hash vault)\b/.test(t)) return 'hashlock';
     if (/\b(xmss|post-?quantum|quantum.?safe vault|public kit)\b/.test(t)) return 'xmss';
+    if (/\b(silverscript|silverc|sil\s*abi|\.sil\b|kcc-?01)\b/.test(t) || /"schema_version"\s*:\s*1/.test(t)) return 'silverscript';
     if (/\b(send|pay|transfer)\b/.test(t) && parseAddress(t)) return 'send';
     if (/\b(send|pay|transfer)\b/.test(t) && !/\b(lock|hold|freeze|vault|sentinel|heir)\b/.test(t)) return 'send';
     if (parseLifeKind(t) || parseUnlockAnytime(t) || (/\b(lock|hold|save|put\s+aside)\b/.test(t) && parseDueAt(t))) return 'life';
@@ -447,6 +451,18 @@
         params.durationLabel = '5 minutes';
       }
     }
+    if (type === 'silverscript') {
+      if (prev && prev.params && prev.params.artifact) params.artifact = prev.params.artifact;
+      if (!params.artifact) {
+        var blob = String(raw || '').match(/\{[\s\S]*"schema_version"\s*:\s*1[\s\S]*\}/);
+        if (blob) {
+          try {
+            var silJson = JSON.parse(blob[0]);
+            if (silJson && silJson.contracts) params.artifact = silJson;
+          } catch (e1) {}
+        }
+      }
+    }
 
     var missing = [];
     if (!type) missing.push('what to do (lock, escrow, send, freeze, rent, savings, sentinel)');
@@ -471,6 +487,9 @@
     } else if (type === 'xmss') {
       if (!params.amountKas) missing.push('amount in KAS');
       if (!params.kit) missing.push('XMSS public kit JSON from keygen/xmss_keygen.py (never the private file)');
+    } else if (type === 'silverscript') {
+      if (!params.amountKas) missing.push('amount in KAS');
+      if (!params.artifact) missing.push('silverc JSON artifact (schema_version 1). Compile .sil with silverc — Argent does not compile .sil');
     } else if (type === 'send') {
       if (!params.amountKas) missing.push('amount in KAS');
       if (!params.destination) missing.push('destination kaspa: address');
@@ -518,6 +537,7 @@
     if (intent.type === 'escrow') return 'Escrow ' + amt + ' for buyer ' + (p.buyerAddress || '…') + '.';
     if (intent.type === 'multisig') return '2-of-2 vault of ' + amt + ' with ' + (p.counterparty || 'a counterparty') + '.';
     if (intent.type === 'xmss') return 'XMSS vault: lock ' + amt + '. Paste a public kit from xmss_keygen.py. Never the private file.';
+    if (intent.type === 'silverscript') return 'SilverScript: lock ' + amt + ' into silverc bytecode (P2SH). Spend with a KCC-01 entry. Argent does not compile .sil.';
     if (intent.type === 'send') return 'Send ' + amt + ' to ' + (p.destination || '…') + '. Plain transfer — not a vault.';
     return intent.type + ': ' + amt;
   }
@@ -541,6 +561,7 @@
     if (first.indexOf('payee') !== -1) return 'Paste the payee’s kaspa: address.';
     if (first.indexOf('each check-in') !== -1) return 'How much KAS should each check-in pay?';
     if (first.indexOf('public kit') !== -1 || first.indexOf('XMSS') !== -1) return 'Paste the PUBLIC kit JSON from python3 keygen/xmss_keygen.py. Never the private file.';
+    if (first.indexOf('silverc') !== -1 || first.indexOf('.sil') !== -1) return 'Paste the silverc JSON (schema_version 1). Compile with silverc; Argent does not compile .sil.';
     return 'I still need ' + first + '.';
   }
 
@@ -719,7 +740,7 @@
       type: 'object',
       required: ['type', 'params'],
       properties: {
-        type: { enum: ['send', 'timelock', 'life', 'escrow', 'multisig', 'kcc20lock', 'sentinel', 'recurring', 'hashlock', 'onramp', 'xmss'] },
+        type: { enum: ['send', 'timelock', 'life', 'escrow', 'multisig', 'kcc20lock', 'sentinel', 'recurring', 'hashlock', 'onramp', 'xmss', 'silverscript'] },
         params: {
           type: 'object',
           properties: {
@@ -744,7 +765,9 @@
             hopCount: { type: 'number' },
             receiver: { type: 'string' },
             secretHex: { type: 'string' },
-            kit: { type: 'string', description: 'XMSS public kit JSON only' }
+            kit: { type: 'string', description: 'XMSS public kit JSON only' },
+            artifact: { type: 'object', description: 'SilAbiArtifact JSON from silverc (schema_version 1)' },
+            contract: { type: 'string', description: 'Contract name inside the artifact' }
           }
         },
         missing: { type: 'array', items: { type: 'string' } },
@@ -776,13 +799,14 @@
       '4. Heir / “when I die” / dead-man → type=sentinel, params.beneficiary = grandson kaspa:q, amountKas, lockMinutes. Timeout pays the heir. Check-in keeps it with the owner. In-app sentinel is Schnorr+CLTV hops shaped like covenants/sentinel. Full XMSS sentinel is the repo CLI.',
       '5. “Lock until he turns 18 then he gets it” is NOT a Time Capsule. Use sentinel (timeout → heir) or hashlock (he claims with a secret) or escrow (he claims, owner can refund). Say this honestly.',
       '6. XMSS vault: user generates keys offline with python3 keygen/xmss_keygen.py. Paste PUBLIC kit only. Wallet funds kaspa:p and later broadcasts xmss_sign.py witness. Spend needs ~0.32 KAS extra.',
+      '6b. SilverScript (kaspanet/silverscript v1-rc1): official Kaspa covenant language. Compile .sil with silverc to SilAbiArtifact JSON. type=silverscript, params.artifact = that JSON, amountKas. Wallet P2SH-funds bytecode. Spend = kcc20Silver.encodeEntry(...) (KCC-01 tag). Argent does NOT compile .sil. Load silverscript.js. Prompt: oneShot("silverscript").',
       '7. Escrow buyer and 2-of-2 counterparty must be kaspa:q addresses; Sweep for 2-of-2 needs both keys imported in this PWA.',
       '8. Recurring needs payee + payKas + lock window. Missed window refunds leftover to owner.',
       '9. KCC20 freeze is type kcc20lock (amountToken + tick + duration). sendToken is a bag transfer, not this.',
       '10. After compileVault the result is { address: "kaspa:p…", txId, type }. pushTx returns { txId, node }. Keys stay at ' + WALLET + '.',
       '11. SCORPION is window.kcc20. Buy tokens with buyKron({ tick, amount }) where amount is KAS. Do not signPskt for vaults — Argent compiles. Do not overwrite a real window.kasware.',
       '',
-      'JSON only when the intent is ready. Schema types: send, timelock, life, escrow, multisig, kcc20lock, sentinel, recurring, hashlock, xmss.',
+      'JSON only when the intent is ready. Schema types: send, timelock, life, escrow, multisig, kcc20lock, sentinel, recurring, hashlock, xmss, silverscript.',
       'If the user says “send kaspa to his grandson” and has no address, ask for the kaspa:q and the amount. Offer: send now vs dead-man (sentinel) vs lock-for-yourself-then-you-send.',
       '',
       'Repos: ' + REPO + '  SDK: https://github.com/mrzeku2000XTTT/kcc20-sdk  Docs: https://kcc20-sdk.vercel.app/argent.html  Prompts: https://kcc20-sdk.vercel.app/argent.html#prompts'
@@ -1356,6 +1380,26 @@
         'Do not compileVault. Do not sendKas for this. User does not give you USDC keys.',
         'Docs: https://changenow.io/en/api  Widget: changenowWidgetUrl()',
         'Done when: Connect SCORPION, estimate 20 USDC → KAS, show where to send USDC or embed widget, payout address is the connected kaspa:q.'
+      ].join('\n'),
+      silverscript: [
+        'Wire SilverScript v1-rc1 (kaspanet/silverscript) into a SCORPION / Argent app. One-shot. Do not invent a compiler.',
+        '',
+        'WHAT IT IS: SilverScript is Kaspa’s high-level covenant language. silverc compiles .sil → SilAbiArtifact JSON (schema_version 1). Bytecode is native Kaspa Script (no EVM/VM). State lives in the UTXO. Spend uses KCC-01: push args then a 4-byte dispatch_tag.',
+        'Argent in KCC20 is the English vault agent. It does NOT compile .sil. Load silverscript.js to parse artifacts and encode entries.',
+        '',
+        load,
+        '  <script src="https://kcc20-sdk.vercel.app/silverscript.js"></script>',
+        '',
+        'FLOW:',
+        '1) User/CI runs: silverc contract.sil -o contract.json   (from https://github.com/kaspanet/silverscript/releases/tag/v1-rc1)',
+        '2) const sil = window.kcc20Silver; const artifact = sil.parse(json);',
+        '3) On Connect click: await kcc.compileVault(sil.compileVaultPayload({ artifact, amountKas: 10 }))',
+        '     type silverscript. Wallet P2SH-hashes bytecode (kaspa:p) and funds it. PIN/KasWare signs P2PK only.',
+        '4) Spend later: sil.encodeEntry(artifact, contractName, entryName, args) → signature script hex (args + tag).',
+        '',
+        'LAW: Do not claim Argent compiled the .sil. Do not mix kcc20.sil examples with live KRON ticks. Keys never leave the PWA.',
+        'Docs: https://kcc20-sdk.vercel.app/SILVERSCRIPT.md  Tutorial: https://github.com/kaspanet/silverscript/blob/v1-rc1/docs/TUTORIAL.md',
+        'Done when: paste a schema_version 1 artifact, compileVault type silverscript returns kaspa:p + txId, encodeEntry returns hex ending in the 4-byte tag.'
       ].join('\n')
     };
   }
@@ -1440,6 +1484,7 @@
     changenowStatus: changenowStatus,
     changenowIntent: changenowIntent,
     oneShotChangenow: function () { return oneShot('changenow'); },
+    oneShotSilverscript: function () { return oneShot('silverscript'); },
     onrampFacts: function () {
       return {
         usdGoesTo: 'Your Stripe/Square bank account. Never Kaspa. Never Argent.',

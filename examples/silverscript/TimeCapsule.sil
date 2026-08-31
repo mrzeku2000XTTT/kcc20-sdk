@@ -1,0 +1,11 @@
+pragma silverscript ^1.0.0;
+
+// Owner-only CLTV analog of Argent Time Capsule. Returns to the same pubkey.
+// Do not tell users this pays a grandson — use TransferWithTimeout or a sentinel for that.
+
+contract TimeCapsule(pubkey owner, temporal unlockAt) {
+    entry spend(sig ownerSig) {
+        require(checkSig(ownerSig, owner));
+        require(tx.time >= unlockAt);
+    }
+}

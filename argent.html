@@ -53,6 +53,7 @@
       <a href="#shot-onramp" data-pane="prompts">Card → KAS on-ramp</a>
       <a href="#shot-base44" data-pane="prompts">Base44 on-ramp (honest)</a>
       <a href="#shot-changenow" data-pane="prompts">ChangeNOW USDC→KAS</a>
+      <a href="#shot-silverscript" data-pane="prompts">SilverScript v1-rc1</a>
     </aside>
     <main>
       <div class="page-tabs" id="argent-tabs">
@@ -61,7 +62,7 @@
       </div>
       <div class="pane" id="pane-guide">
       <section class="doc-sec" id="fact" data-keywords="Argent fact check compile P2SH intent.js buildCovenant">
-        <p class="pill">sdkVersion 168 · argent.js 1.1.0</p>
+        <p class="pill">sdkVersion 168 · argent.js 1.3.0 · silverscript.js 1.0.0-rc1</p>
         <h1>Argent vault compiler</h1>
         <p>Argent is the vault agent inside <a href="https://kcc-20-wallet.vercel.app">KCC20 Wallet</a>. It is <b>not</b> a hosted XMSS compiler and it does <b>not</b> hold keys.</p>
         <table>
@@ -186,7 +187,7 @@ else {
         <h1>Prompts</h1>
         <p>Paste one of these into Replit, Base44, Cursor, Grok, or TTT Builder. The agent one-shots an Argent-ready app. Keys stay in KCC20. <b>Never</b> call <code>.join</code> on <code>llmDirectorPrompt()</code> without <code>promptText()</code> — that is the crash in the screenshot.</p>
         <div class="warn">Safe line: <code>const sys = window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt());</code></div>
-        <p>Also: <code>kcc20Argent.oneShot('director' | 'scorpion' | 'vibe')</code></p>
+        <p>Also: <code>kcc20Argent.oneShot('director' | 'scorpion' | 'vibe' | 'silverscript')</code></p>
       </section>
 
       <section class="doc-sec" id="shot-director" data-keywords="Argent Director chat grandson join">
@@ -251,6 +252,15 @@ else {
         </div>
         <pre class="copy-box" id="pre-changenow">Loading…</pre>
       </section>
+
+      <section class="doc-sec" id="shot-silverscript" data-keywords="SilverScript silverc KCC-01 covenant .sil artifact">
+        <h2>8. SilverScript v1-rc1 (official Kaspa compiler)</h2>
+        <p>High-level <code>.sil</code> → <code>silverc</code> JSON → KCC20 funds P2SH. Argent does <b>not</b> compile <code>.sil</code>. Load <code>silverscript.js</code>.</p>
+        <div class="hero-actions">
+          <button class="btn gold" type="button" data-copy="silverscript">Copy this prompt</button>
+        </div>
+        <pre class="copy-box" id="pre-silverscript">Loading…</pre>
+      </section>
       </div>
     </main>
   </div>
@@ -265,7 +275,7 @@ else {
         if (id === 'llm') return A.promptText(A.llmDirectorPrompt());
         return shots[id] || A.oneShot(id) || '';
       }
-      ['director', 'scorpion', 'vibe', 'llm', 'onramp', 'base44Onramp', 'changenow'].forEach(function (id) {
+      ['director', 'scorpion', 'vibe', 'llm', 'onramp', 'base44Onramp', 'changenow', 'silverscript'].forEach(function (id) {
         var el = document.getElementById('pre-' + id);
         if (el) el.textContent = textOf(id);
       });
