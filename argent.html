@@ -141,7 +141,10 @@ else {
 
       <section class="doc-sec" id="compile" data-keywords="compileVault lockVault sendKas">
         <h2>compileVault / sendKas</h2>
-        <p class="sig">await kcc.compileVault({ type, params, message? }) → { address, txId, type, name }</p>
+        <p class="sig">await kcc.compileVault({ type, amount, params, message? }) → { address, txId, type, name }</p>
+        <p>Always pass a real <code>amount</code> or <code>amountKas</code> (KAS). The wallet will not lock “an amount”. <code>seniorguardian</code> maps to sentinel. Weekly cap: <code>type: 'spendlimit', amount: 50, params: { capKas: 10, period: 'weekly' }</code>.</p>
+        <p class="sig">await kcc.compileVaults({ vaults: [{ type, amount, params }, …] }) → { argent: 2, txId, vaults[] }</p>
+        <p>Argent 2 — one transaction, many P2SH outputs. Argent 1 (<code>compileVault</code>) stays one-at-a-time. SilverScript <b>v1.0.0</b> templates attach for spend-limit / N:M; paste a silverc artifact to fund the real bytecode.</p>
         <p>Wallet Argent compiles the P2SH, user Approves, PIN funds it. Result address starts with <code>kaspa:p</code>.</p>
         <p class="sig">await kcc.sendKas({ dest, amount }) → { txId, dest, amountKas }</p>
         <p>Plain transfer. <code>dest</code> is a full <code>kaspa:q</code>, not <code>kaspa:p</code>.</p>
