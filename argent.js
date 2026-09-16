@@ -34,7 +34,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  var VERSION = '1.3.0';
+  var VERSION = '1.4.0';
   var WALLET = 'https://kcc-20-wallet.vercel.app';
   var REPO = 'https://github.com/mrzeku2000XTTT/kaspa-xmss-covenants';
   var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=168';
@@ -70,7 +70,8 @@
     { id: 'hashlock', group: 'quantum', name: 'Secret lock', type: 'hashlock', compiler: 'buildHashlockCovenant', repo: 'wallet/js/tx.js', returnsTo: 'receiver with preimage, else sender after timer', why: 'Claim with a secret, or refund when time is up.' },
     { id: 'onramp', group: 'simple', name: 'Card sale', type: 'onramp', compiler: 'buildHashlockCovenant (5 min, receiver = buyer)', repo: 'wallet/js/tx.js hashlock', returnsTo: 'buyer after they claim; else seller refund', why: 'On-ramp escrow. Seller locks quoted KAS. Buyer claims after card pay. Unpaid refunds in 5 min.' },
     { id: 'xmss', group: 'quantum', name: 'XMSS vault', type: 'xmss', compiler: 'p2shFromRedeemHex(public kit)', repo: 'covenants/xmsslock + keygen/xmss_keygen.py + xmss_sign.py', returnsTo: 'whoever the witness spends to', why: 'Real post-quantum vault. Paste a PUBLIC kit. Never the private JSON. Spend needs ~0.32 KAS extra.' },
-    { id: 'silverscript', group: 'quantum', name: 'SilverScript artifact', type: 'silverscript', compiler: 'p2shFromRedeemHex(silverc bytecode)', repo: 'kaspanet/silverscript v1-rc1 + wallet/js/silverscript.js', returnsTo: 'whoever the chosen entry spends to', why: 'Official Kaspa covenant language. Compile .sil with silverc, paste the JSON artifact. Argent does not compile .sil. KCC-01 dispatch on spend.' },
+    { id: 'silverscript', group: 'quantum', name: 'SilverScript artifact', type: 'silverscript', compiler: 'p2shFromRedeemHex(silverc bytecode)', repo: 'kaspanet/silverscript v1.0.0 + wallet/js/silverscript.js', returnsTo: 'whoever the chosen entry spends to', why: 'Official Kaspa covenant language. Compile .sil with silverc, paste the JSON artifact. Argent does not compile .sil. KCC-01 dispatch on spend.' },
+    { id: 'searchvault', group: 'alive', name: 'Search Kaspa vault', type: 'searchvault', compiler: 'p2shFromRedeemHex(SearchVault.sil silverc artifact)', repo: 'wallet/covenants/SearchVault.sil', returnsTo: 'same covenant minus 0.001 KAS per search; owner on unlock', why: 'Prepaid Search Kaspa metering. Each pay_search_fee pays EXACTLY 100000 sompi to the Search treasury P2PK and recreates this script. No timelock. Owner must sign. Argent does not compile .sil.' },
     { id: 'send', group: 'simple', name: 'Send KAS', type: 'send', compiler: 'sendKas', repo: null, returnsTo: 'destination', why: 'Plain transfer. Not a P2SH vault. Argent only routes this; it does not compile a covenant.' }
   ];
 
@@ -250,7 +251,7 @@
     return { value: value, unit: unit, days: days, minutes: minutes, label: value + ' ' + unit };
   }
 
-  var HARD_TYPES = { send: 1, sentinel: 1, escrow: 1, multisig: 1, recurring: 1, hashlock: 1, onramp: 1, xmss: 1, silverscript: 1, kcc20lock: 1 };
+  var HARD_TYPES = { send: 1, sentinel: 1, escrow: 1, multisig: 1, recurring: 1, hashlock: 1, onramp: 1, xmss: 1, silverscript: 1, kcc20lock: 1, searchvault: 1, spendlimit: 1 };
 
   function normalizeVaultType(raw) {
     var s = String(raw || '').toLowerCase().replace(/[_/]+/g, ' ').replace(/['’]/g, '').replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
@@ -269,7 +270,8 @@
       hashlock: 'hashlock', 'hash lock': 'hashlock', htlc: 'hashlock', 'secret lock': 'hashlock',
       onramp: 'onramp', 'on ramp': 'onramp', 'card sale': 'onramp', cardsale: 'onramp', 'debit card': 'onramp',
       xmss: 'xmss', 'xmss vault': 'xmss',
-      silverscript: 'silverscript', silverc: 'silverscript', 'silver script': 'silverscript', 'sil artifact': 'silverscript'
+      silverscript: 'silverscript', silverc: 'silverscript', 'silver script': 'silverscript', 'sil artifact': 'silverscript',
+      searchvault: 'searchvault', 'search vault': 'searchvault', 'search kaspa': 'searchvault', searchfee: 'searchvault'
     };
     if (exact[s]) return exact[s];
     if (/dead\s*mans?|deadmanswitch|sentinel|\bdms\b|\bheir\b|check\s*in/.test(s)) return 'sentinel';
@@ -279,6 +281,7 @@
     if (/on\s*ramp|card\s*sale|debit\s*card/.test(s)) return 'onramp';
     if (/hash\s*lock|htlc/.test(s)) return 'hashlock';
     if (/xmss|post\s*quantum/.test(s)) return 'xmss';
+    if (/search\s*(kaspa|vault|fee)|pay_search_fee|0\.001\s*kas/.test(s)) return 'searchvault';
     if (/silver\s*script|silverc|\.sil\b/.test(s)) return 'silverscript';
     if (/recurring|x402/.test(s)) return 'recurring';
     if (/kcc20\s*freeze|freeze tokens/.test(s)) return 'kcc20lock';
@@ -309,6 +312,7 @@
     if (/\b(recurring|subscription|x402)\b/.test(t)) return 'recurring';
     if (/\b(hash\s*lock|htlc|hash vault)\b/.test(t)) return 'hashlock';
     if (/\b(xmss|post-?quantum|quantum.?safe vault|public kit)\b/.test(t)) return 'xmss';
+    if (/\b(search\s*(kaspa|vault|fee)|pay_search_fee|0\.001\s*kas)\b/.test(t)) return 'searchvault';
     if (/\b(silverscript|silverc|sil\s*abi|\.sil\b|kcc-?01)\b/.test(t) || /"schema_version"\s*:\s*1/.test(t)) return 'silverscript';
     if (/\b(send|pay|transfer)\b/.test(t) && parseAddress(t)) return 'send';
     if (/\b(send|pay|transfer)\b/.test(t) && !/\b(lock|hold|freeze|vault|sentinel|heir)\b/.test(t)) return 'send';
@@ -451,6 +455,10 @@
         params.durationLabel = '5 minutes';
       }
     }
+    if (type === 'searchvault') {
+      if (prev && prev.params && prev.params.artifact) params.artifact = prev.params.artifact;
+      params.searchFeeSompi = 100000;
+    }
     if (type === 'silverscript') {
       if (prev && prev.params && prev.params.artifact) params.artifact = prev.params.artifact;
       if (!params.artifact) {
@@ -487,6 +495,8 @@
     } else if (type === 'xmss') {
       if (!params.amountKas) missing.push('amount in KAS');
       if (!params.kit) missing.push('XMSS public kit JSON from keygen/xmss_keygen.py (never the private file)');
+    } else if (type === 'searchvault') {
+      if (!params.amountKas) missing.push('amount in KAS (prepaid search pot)');
     } else if (type === 'silverscript') {
       if (!params.amountKas) missing.push('amount in KAS');
       if (!params.artifact) missing.push('silverc JSON artifact (schema_version 1). Compile .sil with silverc — Argent does not compile .sil');
@@ -537,7 +547,8 @@
     if (intent.type === 'escrow') return 'Escrow ' + amt + ' for buyer ' + (p.buyerAddress || '…') + '.';
     if (intent.type === 'multisig') return '2-of-2 vault of ' + amt + ' with ' + (p.counterparty || 'a counterparty') + '.';
     if (intent.type === 'xmss') return 'XMSS vault: lock ' + amt + '. Paste a public kit from xmss_keygen.py. Never the private file.';
-    if (intent.type === 'silverscript') return 'SilverScript: lock ' + amt + ' into silverc bytecode (P2SH). Spend with a KCC-01 entry. Argent does not compile .sil.';
+    if (intent.type === 'searchvault') return 'Search Kaspa vault: lock ' + amt + '. Each owner-signed pay_search_fee pays EXACTLY 0.001 KAS to the Search treasury and recreates this covenant. No timelock. Needs silverc v1.0.0 artifact of SearchVault.sil.';
+    if (intent.type === 'silverscript') return 'SilverScript v1: lock ' + amt + ' into silverc bytecode (P2SH). Spend with a KCC-01 entry. Argent does not compile .sil.';
     if (intent.type === 'send') return 'Send ' + amt + ' to ' + (p.destination || '…') + '. Plain transfer — not a vault.';
     return intent.type + ': ' + amt;
   }
@@ -740,7 +751,7 @@
       type: 'object',
       required: ['type', 'params'],
       properties: {
-        type: { enum: ['send', 'timelock', 'life', 'escrow', 'multisig', 'kcc20lock', 'sentinel', 'recurring', 'hashlock', 'onramp', 'xmss', 'silverscript'] },
+        type: { enum: ['send', 'timelock', 'life', 'escrow', 'multisig', 'kcc20lock', 'sentinel', 'recurring', 'hashlock', 'onramp', 'xmss', 'silverscript', 'searchvault', 'spendlimit'] },
         params: {
           type: 'object',
           properties: {
@@ -799,7 +810,8 @@
       '4. Heir / “when I die” / dead-man → type=sentinel, params.beneficiary = grandson kaspa:q, amountKas, lockMinutes. Timeout pays the heir. Check-in keeps it with the owner. In-app sentinel is Schnorr+CLTV hops shaped like covenants/sentinel. Full XMSS sentinel is the repo CLI.',
       '5. “Lock until he turns 18 then he gets it” is NOT a Time Capsule. Use sentinel (timeout → heir) or hashlock (he claims with a secret) or escrow (he claims, owner can refund). Say this honestly.',
       '6. XMSS vault: user generates keys offline with python3 keygen/xmss_keygen.py. Paste PUBLIC kit only. Wallet funds kaspa:p and later broadcasts xmss_sign.py witness. Spend needs ~0.32 KAS extra.',
-      '6b. SilverScript (kaspanet/silverscript v1-rc1): official Kaspa covenant language. Compile .sil with silverc to SilAbiArtifact JSON. type=silverscript, params.artifact = that JSON, amountKas. Wallet P2SH-funds bytecode. Spend = kcc20Silver.encodeEntry(...) (KCC-01 tag). Argent does NOT compile .sil. Load silverscript.js. Prompt: oneShot("silverscript").',
+      '6b. SilverScript v1.0.0 (kaspanet/silverscript). Compile .sil with silverc. type=silverscript, params.artifact = JSON, amountKas. Spend = kcc20Silver.encodeEntry. Argent does NOT compile .sil.',
+      '6c. Search Kaspa vault: type=searchvault. Prepaid pot. Each search pays EXACTLY 100000 sompi (0.001 KAS) to feeRecipient P2PK and recreates this.activeScriptPubKey. Owner signs. No timelock. Source: SearchVault.sil. Needs silverc artifact. NOT Sutton .ag — that is not KCC20 Argent.',
       '7. Escrow buyer and 2-of-2 counterparty must be kaspa:q addresses; Sweep for 2-of-2 needs both keys imported in this PWA.',
       '8. Recurring needs payee + payKas + lock window. Missed window refunds leftover to owner.',
       '9. KCC20 freeze is type kcc20lock (amountToken + tick + duration). sendToken is a bag transfer, not this.',
