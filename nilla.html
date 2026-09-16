@@ -50,7 +50,7 @@
     </aside>
     <main>
       <section class="doc-sec" id="nilla" data-keywords="Nilla Gorilla SCORPION status connected KRON">
-        <p class="pill">SCORPION · BUILD 177 · sdk v168 · Argent</p>
+        <p class="pill">SCORPION · BUILD 245 · sdk v171 · Argent</p>
         <h1>Nilla Gorilla</h1>
         <p>This tab is the contract for Nilla (and any copilot). Anyone types intent. The KCC20 SDK (SCORPION) routes it. Argent compiles vaults. The user Approves in the PWA. Keys never leave the wallet.</p>
         <div class="hero-actions">
@@ -62,10 +62,8 @@
           <tbody>
             <tr><td>SCORPION selected (not KasWare)</td><td>Done</td></tr>
             <tr><td>Connect → real PWA popup → same kaspa:q in Nilla</td><td>Done</td></tr>
-            <tr><td>Silent getAccounts / getNetwork / getPublicKey / getUtxoEntries</td><td>Done (need sdkVersion 166)</td></tr>
-            <tr><td>KRON quote + unsigned Safe JSON</td><td>Done</td></tr>
-            <tr><td>signPskt popup → user approved → signed string returned</td><td>Done</td></tr>
-            <tr><td>Broadcast</td><td>Node rejected: <code>false stack entry at end of script execution</code></td></tr>
+            <tr><td>Silent getAccounts / getNetwork / getPublicKey / getUtxoEntries</td><td>Done (sdkVersion 171)</td></tr>
+            <tr><td>KRON buy</td><td>Call buyKron / tradeKron on a user click. Do NOT quoteKron after Connect. Wallet quotes on Approve.</td></tr>
           </tbody>
         </table>
         <div class="ok">Do not go back to Connect/session investigation unless a new error is “Connect KCC20 Wallet first” after a successful Connect (that means stale SDK).</div>
@@ -86,7 +84,7 @@
 
       <section class="doc-sec" id="install-nilla" data-keywords="install sdkVersion 166 BUILD 167 script">
         <h2>Install</h2>
-        <p class="sig">script src="https://kcc-20-wallet.vercel.app/sdk.js?v=168"</p>
+        <p class="sig">script src="https://kcc-20-wallet.vercel.app/sdk.js?v=171"</p>
         <p class="sig">script src="https://kcc20-sdk.vercel.app/argent.js"</p>
         <p>Required: <code>window.kcc20.sdkVersion &gt;= "168"</code> and origin <code>https://kcc-20-wallet.vercel.app</code>.</p>
         <p>User PWA must show <b>BUILD 177</b> (hard-refresh) so <code>compileVault</code> / <code>sendKas</code> exist. For <code>signPskt</code>, still pass only P2PK global indexes. 167+ skips P2SH / already-signed covenant inputs.</p>
