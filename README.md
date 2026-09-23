@@ -156,7 +156,7 @@ This repo is a static site. In Vercel: **Add New → Project → import `mrzeku2
 
 Live: GitHub `main` @ `80de2ae` (Scorpion landing). If Vercel still shows the old docs homepage, open the **kcc20-sdk** project → Deployments → latest `main` → **Promote to Production**.
 
-Routes: `/` Scorpion landing (Connect) · `/tokens` live KRON list · `/prompt` Launch SDK · `/docs` API · `/nilla` · `/taptotip` · `/demo` Try it · `/llms.txt` for agents.
+Routes: `/` Scorpion landing (Connect) · `/tokens` live KRON list · `/prompt` Launch SDK · `/docs` API · `/taptotip` · `/demo` Try it · `/llms.txt` for agents.
 
 ## License
 

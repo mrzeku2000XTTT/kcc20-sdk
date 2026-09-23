@@ -8,7 +8,7 @@
     { id: 'vault', label: 'Covenant++ vault', re: /vault|capsule|timelock|freeze|escrow|covenant|lock kas|rent|heir|multisig|hashlock/i },
     { id: 'pay', label: 'Pay / tip / fund', re: /pay|tip|fund|send token|invoice|checkout kaspa|donate/i },
     { id: 'gate', label: 'Token-gated app', re: /gated|membership|holder|discord|access pass|paywall/i },
-    { id: 'sign', label: 'You build PSKT (Nilla-style)', re: /pskt|signpskt|nilla|unsigned|copilot|builder/i },
+    { id: 'sign', label: 'You build PSKT', re: /pskt|signpskt|unsigned|copilot|builder/i },
     { id: 'dapp', label: 'General KCC20 dApp', re: /.*/ }
   ];
 
@@ -38,7 +38,7 @@
       'Tokens (live KRON list + per-tick prompts): https://kcc20-sdk.vercel.app/tokens.html',
       'AI sources: https://kcc20-sdk.vercel.app/llms.txt  and  https://kcc20-sdk.vercel.app/tokens.json',
       'Canonical tokenlist: https://api.kron.technology/api/registry/tokenlist?all=1  Indexer: https://idx.kron.technology/v1/kcc20',
-      'Nilla: nilla.html  Argent vault compiler: argent.html  Tap2Tip: taptotip.html'
+      'Docs: docs.html  Argent vault compiler: argent.html  Tap2Tip: taptotip.html'
     ].join('\n');
   }
 
@@ -98,7 +98,7 @@
 
   function tmplSign(intent) {
     return baseRules() + '\n\nUSER INTENT:\n' + intent + '\n\nBUILD Nilla Gorilla as a WORKING app: anyone types intent, KCC20 SDK routes, Argent compiles vaults, SCORPION broadcasts.\n' +
-      'Copy the canonical prompt from https://kcc20-sdk.vercel.app/nilla.html#prompt or window.kcc20Argent.oneShot("nilla").\n' +
+      'Copy the builder path from https://kcc20-sdk.vercel.app/docs.html#recipes or window.kcc20Argent.oneShot("nilla").\n' +
       'Also load https://kcc20-sdk.vercel.app/argent.js\n' +
       'Route: buyKron (tick buy, amount=KAS) | sendKas | compileVault | sendToken (held bag) | signPskt only if YOU built unsigned Safe JSON.\n' +
       'signInputs.index = GLOBAL tx.inputs[]. P2PK only. Typical KRON builder path: last input is user P2PK, not 0.\n' +

@@ -1295,7 +1295,7 @@
         money,
         '',
         'Do not overwrite a real window.kasware. Do not load sdk.js on page load. Connect is not payment.',
-        'Docs: https://kcc20-sdk.vercel.app/nilla.html  https://kcc20-sdk.vercel.app/argent.html#prompts',
+        'Docs: https://kcc20-sdk.vercel.app/docs.html  https://kcc20-sdk.vercel.app/argent.html#prompts',
         'Wallet: https://kcc-20-wallet.vercel.app  BUILD 177+',
         '',
         'Done when: Connect once, type “buy 10 kas of KKDAG” → txId, type “lock 10 kas for 7 days” → compileVault kaspa:p txId, type “send 1 kas to my friend” → asks kaspa:q then sendKas txId. No .join error. No false stack on buyKron (wallet builds).'

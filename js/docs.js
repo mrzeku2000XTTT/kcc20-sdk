@@ -41,8 +41,7 @@
     ['buyToken', 'buyKron'],
     ['Tokens', 'tokens'],
     ['tokenlist', 'tokens'],
-    ['Nilla Gorilla', 'nilla'],
-    ['Nilla', 'nilla'],
+
     ['one-shot', 'prompt'],
     ['working reality', 'reality'],
     ['Argent', 'argent'],
@@ -55,8 +54,8 @@
     ['oneShot', 'prompts'],
     ['Scorpion agent', 'shot-scorpion'],
     ['TTT', 'recipes'],
-    ['KRON', 'nilla'],
-    ['false stack', 'nilla']
+    ['KRON', 'recipes'],
+    ['false stack', 'recipes']
   ];
 
   function $(sel, root) { return (root || document).querySelector(sel); }
@@ -64,7 +63,7 @@
 
   function go(id, query) {
     if (id === 'nilla' && !document.getElementById('nilla')) {
-      location.href = 'nilla.html';
+      location.href = 'docs.html#recipes';
       return;
     }
     if (id === 'argent' && !document.getElementById('fact') && !document.getElementById('prompts')) {

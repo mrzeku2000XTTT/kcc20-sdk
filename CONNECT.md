@@ -8,9 +8,9 @@ Argent: https://kcc20-sdk.vercel.app/argent.js · https://kcc20-sdk.vercel.app/a
 Demo: https://kcc-20-wallet.vercel.app/dapp-demo.html  
 Wallet app: https://github.com/mrzeku2000XTTT/KCC20-wallet
 
-KCC20 Wallet is a **hosted PWA**. It is **not** a Google/Chrome extension. Keys never leave the wallet origin. A dApp (Nilla, TTT, or yours) **builds the unsigned PSKT**, then hands it to this wallet. The user reviews an Approve sheet and PIN-signs (or KasWare, if they turned that on).
+KCC20 Wallet is a **hosted PWA**. It is **not** a Google/Chrome extension. Keys never leave the wallet origin. A dApp (TTT, KasDistro, or yours) **builds the unsigned PSKT**, then hands it to this wallet. The user reviews an Approve sheet and PIN-signs (or KasWare, if they turned that on).
 
-This is the same model Nilla asked Tap2Tip for: find the route, build the tx, wallet signs.
+This is the same model: find the route, build the tx, wallet signs.
 
 ## What exists today
 
@@ -103,7 +103,7 @@ Other wallets: list us via KIP-12; copy Connect-on-click, silent session, wallet
 ## What this is not
 
 - Not a Chrome Web Store extension. No `chrome.runtime`.
-- Not Tap2Tip. If Tap2Tip has no public PSKT/KIP-12 docs, do not block Nilla on them — KCC20 already does this handoff.
+- Not Tap2Tip. KCC20 already does the builder PSKT handoff.
 - Not a hosted signer. If the PWA is killed or locked, signing stops until the user reopens it.
-- KasWare PSKT issues (extension-only, input-index / Safe JSON mismatches) are why **Nilla must not** ask KasWare to sign the whole covenant tx. Prefer native KCC20 `signPskt` for builder PSKTs.
+- KasWare PSKT issues (extension-only, input-index / Safe JSON mismatches) are why a builder must not ask KasWare to sign the whole covenant tx. Prefer native KCC20 `signPskt` for builder PSKTs.
 - **`buyKron` / Home TRADE can use a KasWare chip.** SCORPION builds the swap and asks KasWare to sign **only the KAS funding input** (same `kronPsktPlan` as Home). Desktop Chrome/Edge with the extension. Phone = native PIN chip.
