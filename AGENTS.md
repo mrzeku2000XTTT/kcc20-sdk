@@ -4,8 +4,8 @@ You are helping a human vibe-code a Kaspa dApp. Read `llms.txt` first, then `tok
 
 ## Non-negotiable
 
-1. Load `https://kcc-20-wallet.vercel.app/sdk.js?v=168` once, from a Connect **click**.
-2. `window.kcc20.sdkVersion` must be `"168"` or higher.
+1. Load `https://kcc-20-wallet.vercel.app/sdk.js?v=174` once, from a Connect **click**.
+2. `window.kcc20.sdkVersion` must be `"174"` or higher. `window.kcc20.veyra` is TTT Phase 6 (silent). Fork the PWA: https://kcc-20-wallet.vercel.app/FORK.md
 3. Keys stay in the PWA at `https://kcc-20-wallet.vercel.app`. Never ask for seed, PIN, or hex keys.
 4. After Connect the popup **closes**. Silent reads must work without a second Connect.
 5. Buying a KCC20 / KRON token is `buyKron({ tick, amount })` where **amount is KAS**.

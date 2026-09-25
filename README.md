@@ -1,17 +1,19 @@
 # KCC20 Wallet SDK (SCORPION)
 
+**VEYRA** — DApps request. Wallets authorize. Users decide. Kaspa settles. Spec: [VEYRA.md](./VEYRA.md) · [veyra.html](https://kcc-20-wallet.vercel.app/veyra.html). Fork the open wallet: [FORK.md](https://kcc-20-wallet.vercel.app/FORK.md) · [KCC20-wallet](https://github.com/mrzeku2000XTTT/KCC20-wallet).
+
 Plug-and-play **dApp connect** for [KCC20 Wallet](https://kcc-20-wallet.vercel.app). Same job as KasWare’s `window.kasware` — **no Chrome extension**.
 
 | | |
 |---|---|
-| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=168` |
+| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=174` |
 | **This repo** | client `sdk.js` + docs + Tokens + AI sources (not the wallet app) |
 | **Wallet app** | [kcc-20-wallet.vercel.app](https://kcc-20-wallet.vercel.app) · [KCC20-wallet](https://github.com/mrzeku2000XTTT/KCC20-wallet) |
 | **Docs frontend** | Import this repo on Vercel → `kcc20-sdk.vercel.app` (static root, no build) |
 | **Tokens** | [tokens.html](./tokens.html) · [tokens.json](./tokens.json) — every KCC20 on [kron.technology](https://kron.technology) |
 | **For AIs** | [llms.txt](./llms.txt) · [AGENTS.md](./AGENTS.md) · [ai.json](./ai.json) |
 | **Live demo** | [examples/dapp-demo.html](./examples/dapp-demo.html) |
-| **sdkVersion** | `168` |
+| **sdkVersion** | `174` · `window.kcc20.veyra` |
 | **Argent** | [argent.html](./argent.html) · [ARGENT.md](./ARGENT.md) · `argent.js` — LLM directs, wallet compiles vaults |
 
 Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The user **Approves** in the KCC20 window.
@@ -21,7 +23,7 @@ Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The u
 ## Install
 
 ```html
-<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=168"></script>
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=174"></script>
 ```
 
 Or from this repo / jsDelivr (still opens the live PWA):
@@ -33,7 +35,8 @@ Or from this repo / jsDelivr (still opens the live PWA):
 Confirm:
 
 ```js
-window.kcc20.sdkVersion === '168'
+window.kcc20.sdkVersion === '174'
+window.kcc20.veyra.principle
 window.kcc20.origin === 'https://kcc-20-wallet.vercel.app'
 ```
 
