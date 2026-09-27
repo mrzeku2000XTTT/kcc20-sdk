@@ -13,7 +13,7 @@ Plug-and-play **dApp connect** for [KCC20 Wallet](https://kcc-20-wallet.vercel.a
 | **Tokens** | [tokens.html](./tokens.html) · [tokens.json](./tokens.json) — every KCC20 on [kron.technology](https://kron.technology) |
 | **For AIs** | [llms.txt](./llms.txt) · [AGENTS.md](./AGENTS.md) · [ai.json](./ai.json) |
 | **Live demo** | [examples/dapp-demo.html](./examples/dapp-demo.html) |
-| **sdkVersion** | `174` · `window.kcc20.veyra` |
+| **sdkVersion** | `176` · `window.kcc20.veyra` · [Forge](https://kcc20-sdk.vercel.app/forge.html) |
 | **Argent** | [argent.html](./argent.html) · [ARGENT.md](./ARGENT.md) · `argent.js` — LLM directs, wallet compiles vaults |
 
 Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The user **Approves** in the KCC20 window.
