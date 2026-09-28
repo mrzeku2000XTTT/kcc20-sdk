@@ -34,7 +34,7 @@
     '     window.KCC20_RDNS = "RDNS";',
     '   </script>',
     '4. sdk.js: keep SDK_VERSION; scriptOrigin() already reads KCC20_WALLET_ORIGIN.',
-    '   Announce uses KCC20_DOTK and KCC20_RDNS (already in sdk 177).',
+    '   Announce uses KCC20_DOTK, KCC20_RDNS, and origin (sdk 178).',
     '5. releases.json: add a note that this fork is DOTK_NAME.',
     '',
     'Do not restyle CSS yet. Commit: "identity: DOTK_NAME".',
@@ -45,6 +45,7 @@
     'ITERATION 2 — Face only. LOOK from the fill-in block.',
     '',
     'Restyle index.html chrome and css/app.css to match LOOK.',
+    'Home title is DOTK_NAME. Hide TRADE KCC20, Compound, KRON 24H, A-Trade unless LOOK asks for them.',
     'You may change copy, colors, layout, lock-screen title, You tab name.',
     'You may hide Apps you do not want. Do not delete js/ or vendor/.',
     '',
@@ -112,7 +113,7 @@
     'Button Connect calls:',
     '  const list = await window.kcc20.discoverWallets();',
     '  render list showing identity and rdns;',
-    '  await window.kcc20.connect({ identity: "DOTK_NAME" });',
+    '  await window.kcc20.connect({ identity: "DOTK_NAME", origin: "HOST" });',
     '  const who = await window.kcc20.getIdentity();',
     'Show who.name and who.address. Never ask for a key.',
     '',
@@ -150,7 +151,68 @@
     'Done when: installed PWA, Connect from a dApp shows DOTK_NAME, one real TN10 or mainnet tx optional.'
   ].join('\n');
 
-  var ALL = [FILL, P1, P2, P3, P4, P5, P6].join('\n\n========== NEXT ITERATION ==========\n\n');
+  var P7 = [
+    'ITERATION 7 — This must NOT look like Scorpion / KCC20 Wallet.',
+    '',
+    'The user complained the app is still Wallet 1, TRADE KCC20, Compound, A-Trade, Vault tab.',
+    'That chrome is Scorpion. Strip it unless LOOK explicitly asks for it.',
+    '',
+    'REMOVE or hide from Home:',
+    '- Wallet chip switcher ("Wallet 1") unless they have multiple keys',
+    '- TRADE KCC20 row, Compound, KRON 24H, A-Trade tab',
+    '- Scorpion / You marketing copy, TTT logos if LOOK is not Scorpion',
+    '',
+    'REPLACE Home with DOTK_NAME layout:',
+    '- Title: DOTK_NAME (not Wallet 1, not KCC20 Wallet)',
+    '- Identity, live KAS, live KCC20, Receive QR in-page, Send in-page',
+    '- Tab bar labels: Home / Activity / You only, unless LOOK needs more',
+    '- Lock screen title DOTK_NAME',
+    '- Connect popup title DOTK_NAME (dappConnect.js strings that say KCC20 Wallet)',
+    '',
+    'Keep the signer. Delete is for UI. Do not delete tx.js.',
+    'Commit: "face: not scorpion — DOTK_NAME".',
+    'Done when a screenshot would not be mistaken for kcc-20-wallet.vercel.app.'
+  ].join('\n');
+
+  var P8 = [
+    'ITERATION 8 — Connect must pop THIS PWA, not Scorpion.',
+    '',
+    'If a dApp loads https://kcc-20-wallet.vercel.app/sdk.js, Connect opens Scorpion.',
+    'THIS fork must ship its own sdk.js from HOST.',
+    '',
+    '1. index.html MUST set before sdk.js:',
+    '   window.KCC20_WALLET_ORIGIN = "HOST"',
+    '   window.KCC20_DOTK = "DOTK_NAME"',
+    '   window.KCC20_RDNS = "RDNS"',
+    '2. demo-dapp.html on THIS repo loads:',
+    '   <script src="HOST/sdk.js?v=178"></script>',
+    '   NOT kcc-20-wallet.vercel.app/sdk.js',
+    '3. Button: Connect DOTK_NAME',
+    '     await window.kcc20.connect({ identity: "DOTK_NAME", origin: "HOST" })',
+    '   The popup URL must be HOST/index.html?dapp=1 — inspect the popup address bar.',
+    '4. announceProviders info.origin must be HOST.',
+    '',
+    'If the popup URL is kcc-20-wallet.vercel.app you failed this pass. Fix origin.',
+    'Commit: "connect pops HOST".'
+  ].join('\n');
+
+  var P9 = [
+    'ITERATION 9 — Third-party dApps using the official SDK.',
+    '',
+    'A site that only loaded Scorpion sdk.js can still open THIS wallet:',
+    '  await window.kcc20.connect({ identity: "DOTK_NAME", origin: "HOST" })',
+    'or',
+    '  await window.kcc20.connect({ identity: "DOTK_NAME" })',
+    'after adding a row to https://kcc20-sdk.vercel.app/dotk-wallets.json :',
+    '  { "identity": "DOTK_NAME", "rdns": "RDNS", "origin": "HOST", "name": "DOTK_NAME" }',
+    '',
+    'Open a PR on mrzeku2000XTTT/kcc20-sdk adding that row, OR document HOST in README.',
+    'Test from a blank page that uses ONLY https://kcc-20-wallet.vercel.app/sdk.js?v=178',
+    'and connect({ identity, origin: HOST }). Popup must be HOST, chrome must say DOTK_NAME.',
+    'Commit: "registry: DOTK_NAME → HOST".'
+  ].join('\n');
+
+  var ALL = [FILL, P1, P2, P3, P4, P5, P6, P7, P8, P9].join('\n\n========== NEXT ITERATION ==========\n\n');
 
   var STEPS = [
     { id: 'fill', n: '0', title: 'Fill this first', blurb: 'Name, host, look. Paste on every later prompt.', text: FILL },
@@ -159,7 +221,10 @@
     { id: 'pwa', n: '3', title: 'Make it installable', blurb: 'Manifest, Apple tags, service worker. Replace Scorpion’s unregister.', text: P3 },
     { id: 'dapp', n: '4', title: 'Be visible to dApps', blurb: 'Announce alice.k. Ship a tiny Connect test page.', text: P4 },
     { id: 'ship', n: '5', title: 'Deploy and Add to Home Screen', blurb: 'Vercel HTTPS. iPhone standalone. Desktop install.', text: P5 },
-    { id: 'fix', n: '6', title: 'Fix pass', blurb: 'Only if install or Connect failed.', text: P6 }
+    { id: 'fix', n: '6', title: 'Fix pass', blurb: 'Only if install or Connect failed.', text: P6 },
+    { id: 'notscorpion', n: '7', title: 'Stop looking like Scorpion', blurb: 'Strip Wallet 1, TRADE, Compound, A-Trade. Home is DOTK_NAME.', text: P7 },
+    { id: 'popup', n: '8', title: 'Connect pops YOUR PWA', blurb: 'demo-dapp loads HOST/sdk.js. Popup URL is HOST, not kcc-20-wallet.', text: P8 },
+    { id: 'registry', n: '9', title: 'Any dApp can open you', blurb: 'connect({ identity, origin }) or a row in dotk-wallets.json.', text: P9 }
   ];
 
   root.KCC20_DOTK_PROMPT = ALL;

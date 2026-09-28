@@ -1,0 +1,11 @@
+{
+  "comment": "Map .k identity → PWA origin. Forks add a row after they deploy. Connect({ identity }) opens that origin, not Scorpion.",
+  "wallets": [
+    {
+      "identity": "scorpion.k",
+      "rdns": "app.kcc20.wallet",
+      "origin": "https://kcc-20-wallet.vercel.app",
+      "name": "Scorpion"
+    }
+  ]
+}
