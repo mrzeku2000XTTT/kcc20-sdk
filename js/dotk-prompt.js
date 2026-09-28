@@ -1,0 +1,58 @@
+(function (root) {
+  var PROMPT = [
+    'You are building a REAL Kaspa PWA wallet called a Dot.K wallet.',
+    'The user owns the interface. You do NOT invent cryptography.',
+    '',
+    'SOURCE OF TRUTH (fork this, do not start empty):',
+    'https://github.com/mrzeku2000XTTT/KCC20-wallet',
+    'Docs: https://kcc20-sdk.vercel.app/DOTK.md',
+    'VEYRA: https://kcc20-sdk.vercel.app/veyra.html',
+    'Forge templates: https://kcc20-sdk.vercel.app/forge.html',
+    '',
+    'KEEP UNCHANGED (security core):',
+    '- js/tx.js js/crypto.js js/kasware.js js/kaspire.js vendor/kaspa WASM',
+    '- PIN / KasWare / Kaspire Approve sheets',
+    '- Keys never leave the PWA origin. Never ask for seed/PIN/hex in the dApp.',
+    '- signPskt only signs listed P2PK funding indexes. Covenant inputs stay unsigned by the user key.',
+    '- pushTx returns { txId, node }',
+    '- Do not overwrite a real window.kasware',
+    '',
+    'CHANGE (the face):',
+    '- index.html, css/app.css, branding, copy',
+    '- PWA name in manifest.json (e.g. "alice.k")',
+    '- Unique rdns so pickers list THIS wallet next to Scorpion',
+    '',
+    'BEFORE loading sdk.js in the generated PWA and in any demo dApp:',
+    '<script>',
+    '  window.KCC20_WALLET_ORIGIN = "https://YOUR-HOST";',
+    '  window.KCC20_DOTK = "alice.k";   // the .k name',
+    '  window.KCC20_RDNS = "k.alice";     // unique, not app.kcc20.wallet',
+    '</script>',
+    '<script src="https://YOUR-HOST/sdk.js?v=177"></script>',
+    '',
+    'Copy sdk.js from the fork so ORIGIN is YOUR host. Bump SDK_VERSION and add releases.json that day.',
+    '',
+    'DAPPS DETECT THIS WALLET:',
+    'window.addEventListener("kaspa:announceProvider", (e) => {',
+    '  const info = e.detail.info; // info.identity === "alice.k", info.rdns === "k.alice"',
+    '});',
+    'window.dispatchEvent(new Event("kaspa:requestProvider"));',
+    'await window.kcc20.connect({ identity: "alice.k" });',
+    'await window.kcc20.getIdentity(); // { name, address, rdns }',
+    '',
+    'PWA POPUP: keep the existing connect popup (dappConnect.js). Deploy on Vercel/GitHub Pages.',
+    'Add to Home Screen. Test: a blank HTML dApp with Connect lists alice.k and Scorpion.',
+    '',
+    'USER INTENT (fill this in):',
+    'Name: ____.k',
+    'Look: (paste Forge preset or describe)',
+    'Host: https://____',
+    '',
+    'Done when: fork deploys, Connect from a third-party page shows the .k name, PIN still signs, keys never printed.'
+  ].join('\n');
+
+  root.KCC20_DOTK_PROMPT = PROMPT;
+  root.KCC20_copyDotkPrompt = function () {
+    return navigator.clipboard.writeText(PROMPT);
+  };
+})(typeof window !== 'undefined' ? window : this);
