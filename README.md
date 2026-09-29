@@ -6,14 +6,14 @@ Plug-and-play **dApp connect** for [KCC20 Wallet](https://kcc-20-wallet.vercel.a
 
 | | |
 |---|---|
-| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=178` |
+| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=179` |
 | **This repo** | client `sdk.js` + docs + Tokens + AI sources (not the wallet app) |
 | **Wallet app** | [kcc-20-wallet.vercel.app](https://kcc-20-wallet.vercel.app) · [KCC20-wallet](https://github.com/mrzeku2000XTTT/KCC20-wallet) |
 | **Docs frontend** | Import this repo on Vercel → `kcc20-sdk.vercel.app` (static root, no build) |
 | **Tokens** | [tokens.html](./tokens.html) · [tokens.json](./tokens.json) — every KCC20 on [kron.technology](https://kron.technology) |
 | **For AIs** | [llms.txt](./llms.txt) · [AGENTS.md](./AGENTS.md) · [ai.json](./ai.json) |
 | **Live demo** | [examples/dapp-demo.html](./examples/dapp-demo.html) |
-| **sdkVersion** | `178` · [Dot.K](https://kcc20-sdk.vercel.app/dotk.html) · [Connect dApp](https://kcc20-sdk.vercel.app/dotk-dapp.html) · [Forge](https://kcc20-sdk.vercel.app/forge.html) · `veyra` |
+| **sdkVersion** | `179` · [Dot.K](https://kcc20-sdk.vercel.app/dotk.html) · [Connect dApp](https://kcc20-sdk.vercel.app/dotk-dapp.html) · [Forge](https://kcc20-sdk.vercel.app/forge.html) · `veyra` |
 | **Argent** | [argent.html](./argent.html) · [ARGENT.md](./ARGENT.md) · `argent.js` — LLM directs, wallet compiles vaults |
 
 Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The user **Approves** in the KCC20 window.
@@ -23,7 +23,7 @@ Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The u
 ## Install
 
 ```html
-<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=178"></script>
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=179"></script>
 ```
 
 Or from this repo / jsDelivr (still opens the live PWA):
@@ -35,7 +35,7 @@ Or from this repo / jsDelivr (still opens the live PWA):
 Confirm:
 
 ```js
-window.kcc20.sdkVersion === '178'
+window.kcc20.sdkVersion === '179'
 window.kcc20.veyra.principle
 window.kcc20.origin === 'https://kcc-20-wallet.vercel.app'
 ```
@@ -43,8 +43,9 @@ window.kcc20.origin === 'https://kcc-20-wallet.vercel.app'
 Connect a vibe-coded Dot.K PWA (popup is **their** origin):
 
 ```js
-await kcc.connect({ identity: 'alice.k', origin: 'https://alice-k.vercel.app' });
-// or await kcc.connect({ identity: 'alice.k' }) after a row in dotk-wallets.json
+await kcc.connect({ identity: 'alice.k' });
+// origin from official records.url, then a row in dotk-wallets.json
+await kcc.verifyDotk({ identity: 'alice.k' }); // verified when deed, HOST, and account agree
 ```
 
 Only call Connect from a **user click**. Never on page load.
