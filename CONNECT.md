@@ -83,7 +83,7 @@ Load `sdk.js` **before** you dispatch `kaspa:requestProvider`.
 | `getHoldings()` | KAS + KCC20 bags |
 | `signPskt({ txJsonString, options })` | signed Safe JSON **string** |
 | `pushTx(signedJson)` | `{ txId, node }` — **object**, not a hex string. Read `result.txId`. |
-| `buyKron({ tick, amount })` | Buy any KRON KCC20. `amount` = KAS. Wallet builds TRADE. Live ticks: [tokens.html](https://kcc20-sdk.vercel.app/tokens.html) |
+| `buyKron({ tick, amount, expectedPayer })` | Buy any KRON KCC20. `amount` = KAS. Wallet builds TRADE. `expectedPayer` = `getState().payer` (Connect address). Live ticks: [tokens.html](https://kcc20-sdk.vercel.app/tokens.html) |
 | `quoteKron` / `sellKron` | Preview / sell (sell amount = tokens) |
 | `sendToken({ tick, amount, dest })` | KCC20 send (used by TTT Fund). Not a buy. |
 | `compileVault({ type, params })` | Argent compiles a P2SH `kaspa:p`. User PIN-funds. See [argent.html](https://kcc20-sdk.vercel.app/argent.html). |
@@ -93,7 +93,8 @@ Load `sdk.js` **before** you dispatch `kaspa:requestProvider`.
 ## Buy on any vibe platform
 
 ```js
-await kcc.buyKron({ tick: 'KKDAG', amount: '10' });
+const st = await kcc.getState();
+await kcc.buyKron({ tick: 'KKDAG', amount: '10', expectedPayer: st.payer || st.address });
 ```
 
 Canonical list of launched ticks: `https://api.kron.technology/api/registry/tokenlist?all=1` (also `/tokens.json` and `/api/tokenlist` on the SDK host). Skip `?` tickers. Agents: read `https://kcc20-sdk.vercel.app/llms.txt`.

@@ -289,7 +289,7 @@ const { txId } = await kcc.pushTx(signed);</pre>
 
       <section class="doc-sec" id="buyKron" data-keywords="buyKron buyToken quoteKron sellKron tradeKron KRON KKDAG IFWEN tokenlist shop marketplace">
         <h2>buyKron / buyToken <span class="tag pop">popup</span></h2>
-        <p class="sig">await kcc.buyKron({ tick: 'KKDAG', amount: '10' }) → { txId, quote, explorer }</p>
+        <p class="sig">await kcc.buyKron({ tick: 'KKDAG', amount: '10', expectedPayer }) → { txId, quote, from, explorer }</p>
         <p>Let a user buy any KCC20 launched on <a href="https://kron.technology">kron.technology</a> <b>on your platform</b>. The wallet quotes and builds the same swap as Home → TRADE. You do <b>not</b> assemble curve/pool PSKTs. <code>amount</code> is <b>KAS to spend</b>.</p>
         <ul>
           <li><code>tick</code> — KRON <code>symbol</code>. Live list: <a href="tokens.html">Tokens tab</a>, <a href="tokens.json">tokens.json</a>, <a href="https://api.kron.technology/api/registry/tokenlist?all=1">KRON tokenlist</a>.</li>
@@ -297,9 +297,10 @@ const { txId } = await kcc.pushTx(signed);</pre>
           <li>Optional preview: <code>quoteKron({ tick, side:'buy', amount })</code>. If it throws, skip — Buy still quotes.</li>
           <li>Sell: <code>sellKron({ tick, amount })</code> where amount is <b>tokens</b>.</li>
           <li>Aliases: <code>buyToken</code>, <code>tradeKron({ tick, side, amount })</code>, <code>request('buyKron', { tick, amount })</code>.</li>
-          <li>Needs <code>sdk.js?v=167</code>. Mainnet only.</li>
+          <li><code>expectedPayer</code> (aliases <code>payer</code>, <code>from</code>, <code>account</code>) — the Connect address from <code>getState().payer</code> / <code>getAccounts()[0]</code>. Scorpion refuses if a different chip would spend. Pin <code>sdk.js?v=180</code>. Mainnet only.</li>
         </ul>
-<pre>await kcc.buyKron({ tick: 'KKDAG', amount: '10' });</pre>
+<pre>const st = await kcc.getState();
+await kcc.buyKron({ tick: 'KKDAG', amount: '10', expectedPayer: st.payer || st.address });</pre>
       </section>
 
       <section class="doc-sec" id="sendToken" data-keywords="sendToken sendKcc20 payToken payKcc20 fundCredits KKDAG dest treasury TTT">

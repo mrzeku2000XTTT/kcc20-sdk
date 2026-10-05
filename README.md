@@ -6,7 +6,7 @@ Plug-and-play **dApp connect** for [KCC20 Wallet](https://kcc-20-wallet.vercel.a
 
 | | |
 |---|---|
-| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=179` |
+| **Script** | `https://kcc-20-wallet.vercel.app/sdk.js?v=180` |
 | **This repo** | client `sdk.js` + docs + Tokens + AI sources (not the wallet app) |
 | **Wallet app** | [kcc-20-wallet.vercel.app](https://kcc-20-wallet.vercel.app) · [KCC20-wallet](https://github.com/mrzeku2000XTTT/KCC20-wallet) |
 | **Docs frontend** | Import this repo on Vercel → `kcc20-sdk.vercel.app` (static root, no build) |
@@ -23,7 +23,7 @@ Keys never leave the wallet origin. Your app **builds** the unsigned PSKT. The u
 ## Install
 
 ```html
-<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=179"></script>
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=180"></script>
 ```
 
 Or from this repo / jsDelivr (still opens the live PWA):
@@ -82,7 +82,8 @@ If `getPublicKey` / `getUtxoEntries` throw `Connect KCC20 Wallet first` after a 
 ### Buy a KCC20 token on your app
 
 ```js
-await kcc.buyKron({ tick: 'KKDAG', amount: '10' }); // amount = KAS to spend
+const st = await kcc.getState();
+await kcc.buyKron({ tick: 'KKDAG', amount: '10', expectedPayer: st.payer || st.address }); // amount = KAS to spend
 ```
 
 Live ticks: [tokens.html](https://kcc20-sdk.vercel.app/tokens.html) · [tokens.json](https://kcc20-sdk.vercel.app/tokens.json) · [KRON tokenlist](https://api.kron.technology/api/registry/tokenlist?all=1). `sendToken` is a bag transfer, not a buy.
@@ -115,7 +116,7 @@ Live ticks: [tokens.html](https://kcc20-sdk.vercel.app/tokens.html) · [tokens.j
 | `getBalance(address?)` | `{ confirmed, unconfirmed, address }` sompi |
 | `signPskt({ txJsonString, options })` | signed Safe JSON **string** |
 | `pushTx(signedJson)` | `{ txId, node }` |
-| `buyKron({ tick, amount })` | Buy KCC20. `amount` = KAS. Wallet builds TRADE |
+| `buyKron({ tick, amount, expectedPayer })` | Buy KCC20. `amount` = KAS. `expectedPayer` = Connect address. Wallet builds TRADE |
 | `sendToken({ tick, amount, dest })` | Send a held bag (not a buy) |
 | `compileVault({ type, params })` | Argent compiles a P2SH vault (`kaspa:p`). User funds. |
 | `sendKas({ dest, amount })` | Plain KAS transfer. “Send to grandson” is this unless they want a dead-man. |
