@@ -77,7 +77,7 @@ const signed = await kcc.signPskt({
 const { txId } = await kcc.pushTx(signed);   // optional
 ```
 
-If `getPublicKey` / `getUtxoEntries` throw `Connect KCC20 Wallet first` after a successful Connect, you are on a **stale SDK**. Load `sdk.js?v=168` and hard-reload.
+If `getPublicKey` / `getUtxoEntries` throw `Connect KCC20 Wallet first` after a successful Connect, you are on a **stale SDK**. Load `sdk.js?v=180` and hard-reload.
 
 ### Buy a KCC20 token on your app
 

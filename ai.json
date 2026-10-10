@@ -4,8 +4,8 @@
   "description": "Plug-and-play Kaspa KCC20 dApp SDK. Connect a hosted PWA, buy every KRON-launched KCC20 token with buyKron, send bags, sign PSKTs. Keys never leave the wallet.",
   "website": "https://kcc20-sdk.vercel.app",
   "wallet": "https://kcc-20-wallet.vercel.app",
-  "sdk": "https://kcc-20-wallet.vercel.app/sdk.js?v=168",
-  "sdkVersion": "168",
+  "sdk": "https://kcc-20-wallet.vercel.app/sdk.js?v=180",
+  "sdkVersion": "180",
   "argent": "https://kcc20-sdk.vercel.app/argent.js",
   "argentPage": "https://kcc20-sdk.vercel.app/argent.html",
   "argentMd": "https://kcc20-sdk.vercel.app/ARGENT.md",
@@ -25,10 +25,18 @@
   "kip12": { "event": "kaspa:provider", "rdns": "app.kcc20.wallet" },
   "buy": {
     "method": "buyKron",
-    "args": { "tick": "KKDAG", "amount": "10" },
+    "args": { "tick": "KKDAG", "amount": "10", "expectedPayer": "<getState().payer>" },
     "amountMeans": "KAS to spend",
     "not": "sendToken is a bag transfer, not a buy"
   },
+  "sendToken": {
+    "args": { "tick": "NACHO", "amount": "1", "dest": "kaspa:q...", "expectedPayer": "<getState().payer>" },
+    "protocols": ["kcc20", "krc20"],
+    "dest": "kaspa:q",
+    "not": "does not wrap KRC-20 into a KCC20 cell. Vault Bridge is KCC20 to KAS to KCC20 on KRON."
+  },
+  "fork": "https://github.com/mrzeku2000XTTT/KCC20-wallet",
+  "build": "291",
   "vault": {
     "parse": "window.kcc20Argent.direct(text)",
     "compile": "compileVault({ type, params })",

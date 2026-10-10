@@ -4,12 +4,12 @@
 
 Website: https://kcc20-sdk.vercel.app
 Wallet (keys live here): https://kcc-20-wallet.vercel.app
-SDK script: https://kcc-20-wallet.vercel.app/sdk.js?v=168
+SDK script: https://kcc-20-wallet.vercel.app/sdk.js?v=180
 Argent compiler: https://kcc20-sdk.vercel.app/argent.js
 GitHub: https://github.com/mrzeku2000XTTT/kcc20-sdk
 Wallet app: https://github.com/mrzeku2000XTTT/KCC20-wallet
 
-Require `window.kcc20.sdkVersion >= "168"` (`buyKron` + `compileVault` + `sendKas`). Only call Connect from a **user click**. After Approve the popup **closes on purpose**. Then silent reads work.
+Require `window.kcc20.sdkVersion === "180"` (`buyKron` + `expectedPayer` + `compileVault` + `sendKas` + KRC-20 `sendToken`). Only call Connect from a **user click**. After Approve the popup **closes on purpose**. Then silent reads work. Fork the PWA: https://github.com/mrzeku2000XTTT/KCC20-wallet · FORK.md.
 
 ## Read next
 
@@ -38,14 +38,15 @@ Skip tickers that are empty or contain `?`. Use `symbol` as `tick`. `buyKron({ t
 ## Smallest shop (copy this)
 
 ```html
-<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=167"></script>
+<script src="https://kcc-20-wallet.vercel.app/sdk.js?v=180"></script>
 ```
 
 ```js
 const kcc = window.kcc20;
 const accounts = await kcc.connect();            // click only
 const bag = await kcc.getTokenBalance('KKDAG');  // silent
-const bought = await kcc.buyKron({ tick: 'KKDAG', amount: '10' });
+const st = await kcc.getState();
+const bought = await kcc.buyKron({ tick: 'KKDAG', amount: '10', expectedPayer: st.payer || st.address });
 // bought.txId   bought.quote   bought.explorer
 ```
 
@@ -57,10 +58,10 @@ const bought = await kcc.buyKron({ tick: 'KKDAG', amount: '10' });
 |---|---|
 | `connect()` | Popup. Once per session. |
 | `getAccounts` / `getNetwork` / `getPublicKey` / `getUtxoEntries` / `getBalance` / `getHoldings` / `getTokenBalance` | Silent after Connect |
-| `buyKron({ tick, amount })` | Buy KCC20 with KAS. amount = KAS |
+| `buyKron({ tick, amount, expectedPayer })` | Buy KCC20 with KAS. amount = KAS. expectedPayer = Connect address |
 | `sellKron({ tick, amount })` | Sell. amount = tokens |
 | `quoteKron({ tick, side, amount })` | Optional preview |
-| `sendToken({ tick, amount, dest })` | Send held bag to `kaspa:q…` |
+| `sendToken({ tick, amount, dest, expectedPayer })` | Send held bag (KCC20 cell or Kasplex KRC-20) to `kaspa:q…` |
 | `signPskt({ txJsonString, options })` | You built the tx. P2PK only. `signInputs.index` is **global** `tx.inputs[]` |
 | `pushTx(signed)` | Returns `{ txId, node }` — read `.txId` |
 | `compileVault({ type, params })` | Argent compiles a P2SH `kaspa:p`. User PIN-funds. Not a send. |

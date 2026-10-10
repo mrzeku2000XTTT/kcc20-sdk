@@ -1,9 +1,10 @@
 (function (root) {
-  var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=168';
+  var SDK = 'https://kcc-20-wallet.vercel.app/sdk.js?v=180';
   var WALLET = 'https://kcc-20-wallet.vercel.app';
   var DOCS = 'https://github.com/mrzeku2000XTTT/kcc20-sdk';
 
   var KINDS = [
+    { id: 'bridge', label: 'KRC-20 / KCC20 bags', re: /bridge|krc20|krc-20|kasplex|wrap nacho|migrate kasplex/i },
     { id: 'buy', label: 'Buy KRON tokens', re: /buy|purchase|checkout|shop|swap|kron|kkdag|ifwen|token market|utility|my token|launched/i },
     { id: 'vault', label: 'Covenant++ vault', re: /vault|capsule|timelock|freeze|escrow|covenant|lock kas|rent|heir|multisig|hashlock/i },
     { id: 'pay', label: 'Pay / tip / fund', re: /pay|tip|fund|send token|invoice|checkout kaspa|donate/i },
@@ -26,11 +27,13 @@
       'Use KCC20 Wallet (SCORPION). Not a Chrome extension. Keys NEVER leave the wallet. NEVER ask for seed, PIN, or 64-hex.',
       'Load once, on a user click path (Connect button), not on every page load:',
       '  <script src="' + SDK + '"></script>',
-      '  const kcc = window.kcc20;  // require kcc.sdkVersion >= "168"',
+      '  const kcc = window.kcc20;  // require kcc.sdkVersion === "180"',
       'Connect ONLY on a button tap: const accounts = await kcc.connect();',
       'After Connect the popup CLOSES on purpose. Then silent reads work:',
-      '  getAccounts, getNetwork, getPublicKey, getUtxoEntries, getBalance, getHoldings, getTokenBalance',
-      'If you see "Connect KCC20 Wallet first" after a successful Connect, the SDK is stale. Reload sdk.js?v=168.',
+      '  getAccounts, getNetwork, getPublicKey, getUtxoEntries, getBalance, getHoldings, getTokenBalance, getState',
+      'If you see "Connect KCC20 Wallet first" after a successful Connect, the SDK is stale. Reload sdk.js?v=180.',
+      'Spend methods take expectedPayer: const st = await kcc.getState(); then buyKron/sendToken/sendKas({ ..., expectedPayer: st.payer || st.address }).',
+      'Fork the live PWA: https://github.com/mrzeku2000XTTT/KCC20-wallet (BUILD 291, FORK.md). Pin YOURHOST/sdk.js?v=180 after a fork.',
       'User must already have created/imported a wallet at ' + WALLET + ' and unlocked with PIN.',
       'Allow popups. No dApp PIN pad. Do not overwrite window.kasware if a real extension exists.',
       'Do not credit the user without a real txId. Connect is not payment.',
@@ -47,7 +50,8 @@
       'The wallet builds the swap (same as Home → TRADE). You do NOT assemble curve/pool PSKTs.\n\n' +
       'Load ticks from https://kcc20-sdk.vercel.app/tokens.json (or live KRON tokenlist). Skip empty / "?" ticks. Use symbol as tick.\n' +
       'UI:\n- Connect KCC20 button\n- Tick picker (default KKDAG; include KRON, IFWEN, and every launched tick)\n- KAS amount (default 10)\n- Optional preview: try await kcc.quoteKron({ tick, side:"buy", amount }). If it throws, skip — Buy sheet still quotes.\n- Live bag: await kcc.getTokenBalance(tick)\n- Button BUY → only on that tap:\n' +
-      '    const bought = await kcc.buyKron({ tick: tick.toUpperCase(), amount: String(kas) });\n' +
+      '    const st = await kcc.getState();\n' +
+      '    const bought = await kcc.buyKron({ tick: tick.toUpperCase(), amount: String(kas), expectedPayer: st.payer || st.address });\n' +
       '    // bought.txId, bought.quote.tokenHuman, bought.explorer\n' +
       '- Show txId + explorer. Handle User rejected.\n\n' +
       'Do NOT use sendToken for buying. sendToken transfers a bag they already hold.\n' +
@@ -107,13 +111,26 @@
       'const sys = window.kcc20Argent.promptText(window.kcc20Argent.llmDirectorPrompt()); never .join a string.';
   }
 
+  function tmplBridge(intent) {
+    return baseRules() + '\n\nUSER INTENT:\n' + intent + '\n\nTHIS IS A WALLET FORK, not a wrap protocol.\n' +
+      'Fork https://github.com/mrzeku2000XTTT/KCC20-wallet (main, BUILD 291). Read FORK.md. Keep the Veyra boundary. Unique rdns. Pin YOURHOST/sdk.js?v=180.\n' +
+      'KRC-20 = Kasplex inscription (commit-reveal). KCC20 = KRON covenant cell. They are different machines. Do NOT mint a KCC20 cell because a KRC-20 transfer happened.\n' +
+      'Live on Scorpion today:\n' +
+      '- getHoldings() returns KAS + KCC20 bags + KRC-20 bags (protocol field kcc20 | krc20 | kas).\n' +
+      '- sendToken({ tick, amount, dest, expectedPayer }) sends whichever bag this wallet holds. KRC-20 uses Kasplex commit-reveal. dest = kaspa:q.\n' +
+      '- buyKron({ tick, amount, expectedPayer }) buys a KRON KCC20 with KAS. amount = KAS.\n' +
+      '- Vault → Bridge is KCC20 → KAS → KCC20 on idx.kron.technology. Not Ethereum. Not Kasplex wrap.\n' +
+      'To go KRC-20 → KCC20: user needs KAS, then buyKron. Selling arbitrary KRC-20 for KAS is a Kasplex market (list/send). Scorpion does not run a universal KRC-20 AMM.\n' +
+      'dApp surface if you are NOT forking the wallet: Connect, getHoldings, sendToken for bags, buyKron for KCC20. Keys stay in Scorpion.';
+  }
+
   function tmplDapp(intent) {
     return baseRules() + '\n\nUSER INTENT:\n' + intent + '\n\nBUILD a mobile-first dApp that uses window.kcc20 for all money.\n' +
-      'Pick the smallest API:\n- Buy KRON: buyKron({ tick, amount })\n- Send bag: sendToken({ tick, amount, dest })\n- Custom tx: you build + signPskt P2PK only\n' +
+      'Pick the smallest API:\n- Buy KRON: buyKron({ tick, amount, expectedPayer })\n- Send bag: sendToken({ tick, amount, dest, expectedPayer }) — KCC20 or KRC-20, whichever they hold\n- Custom tx: you build + signPskt P2PK only\n' +
       'Ship Connect + one money button first. Dark, native-friendly. No fake balances.';
   }
 
-  var FNS = { buy: tmplBuy, vault: tmplVault, pay: tmplPay, gate: tmplGate, sign: tmplSign, dapp: tmplDapp };
+  var FNS = { bridge: tmplBridge, buy: tmplBuy, vault: tmplVault, pay: tmplPay, gate: tmplGate, sign: tmplSign, dapp: tmplDapp };
 
   function generate(text) {
     var kind = detect(text);

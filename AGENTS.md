@@ -4,12 +4,12 @@ You are helping a human vibe-code a Kaspa dApp. Read `llms.txt` first, then `tok
 
 ## Non-negotiable
 
-1. Load `https://kcc-20-wallet.vercel.app/sdk.js?v=174` once, from a Connect **click**.
-2. `window.kcc20.sdkVersion` must be `"174"` or higher. `window.kcc20.veyra` is TTT Phase 6 (silent). Fork the PWA: https://kcc-20-wallet.vercel.app/FORK.md
+1. Load `https://kcc-20-wallet.vercel.app/sdk.js?v=180` once, from a Connect **click**.
+2. `window.kcc20.sdkVersion` must be `"180"`. `expectedPayer` on buyKron/sendToken/sendKas. `window.kcc20.veyra` is TTT Phase 6 (silent). Fork the PWA: https://github.com/mrzeku2000XTTT/KCC20-wallet · https://kcc-20-wallet.vercel.app/FORK.md
 3. Keys stay in the PWA at `https://kcc-20-wallet.vercel.app`. Never ask for seed, PIN, or hex keys.
 4. After Connect the popup **closes**. Silent reads must work without a second Connect.
 5. Buying a KCC20 / KRON token is `buyKron({ tick, amount })` where **amount is KAS**.
-6. `sendToken` is not a buy. It sends a bag they already hold to a full `kaspa:q…`.
+6. `sendToken` is not a buy. It sends a bag they already hold (KCC20 or KRC-20) to a full `kaspa:q…`. KRC-20 is Kasplex commit-reveal. There is no wrap that mints a KCC20 cell from a KRC-20 transfer.
 7. `pushTx` returns `{ txId, node }`. Use `result.txId`.
 8. `signPskt` `signInputs.index` is a **global** `tx.inputs[]` index. P2PK only. Never curve / pool / P2SH.
 9. Do not overwrite a real `window.kasware`.
@@ -19,7 +19,7 @@ You are helping a human vibe-code a Kaspa dApp. Read `llms.txt` first, then `tok
 
 - Fetch ticks from `https://kcc20-sdk.vercel.app/tokens.json` (or live tokenlist).
 - UI: Connect, tick (default their token or KKDAG), KAS amount (default 10), bag, BUY.
-- On BUY click: `await window.kcc20.buyKron({ tick, amount })`.
+- On BUY click: `const st = await kcc.getState(); await window.kcc20.buyKron({ tick, amount, expectedPayer: st.payer || st.address })`.
 - Show `txId` + explorer. Handle `User rejected`.
 - Optional: `quoteKron`; if it throws, skip.
 
